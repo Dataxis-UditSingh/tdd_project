@@ -48,4 +48,12 @@ describe('API', () => {
       difficulty: 'Beginner',
     });
   });
+
+  it('returns an empty array for an unknown difficulty', async () => {
+    const response = await request(app)
+      .get('/api/challenges?difficulty=Unknown');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([]);
+  });
 });

@@ -11,8 +11,18 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.get('/api/challenges', (_req, res) => {
-  res.json(challenges);
+app.get('/api/challenges', (req, res) => {
+  const { difficulty } = req.query;
+
+  if (!difficulty) {
+    return res.json(challenges);
+  }
+
+  const filteredChallenges = challenges.filter(
+    (challenge) => challenge.difficulty === difficulty,
+  );
+
+  return res.json(filteredChallenges);
 });
 
 app.get('/api/challenges/:id', (req, res) => {
