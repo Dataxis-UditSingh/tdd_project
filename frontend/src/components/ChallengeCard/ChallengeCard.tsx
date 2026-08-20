@@ -1,29 +1,34 @@
 type Challenge = {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: string;
-  concepts: string[];
+    id: string;
+    title: string;
+    description: string;
+    difficulty: string;
+    concepts: string[];
 };
 
 type ChallengeCardProps = {
-  challenge: Challenge;
+    challenge: Challenge;
+    onStart: (challenge: Challenge) => void;
 };
 
 export default function ChallengeCard({
-  challenge,
+    challenge,
+    onStart,
 }: ChallengeCardProps) {
-  return (
-    <article>
-      <h2>{challenge.title}</h2>
+    return (
+        <article>
+            <h2>{challenge.title}</h2>
 
-      <p>{challenge.description}</p>
+            <p>{challenge.description}</p>
 
-      <span>{challenge.difficulty}</span>
+            <span>{challenge.difficulty}</span>
 
-      <button type="button">
-        Start Challenge
-      </button>
-    </article>
-  );
+            <button
+                type="button"
+                onClick={() => onStart(challenge)}
+            >
+                Start Challenge
+            </button>
+        </article>
+    );
 }
