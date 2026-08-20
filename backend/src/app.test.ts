@@ -34,4 +34,18 @@ describe('API', () => {
     expect(response.status).toBe(404);
     expect(response.body).toEqual({ message: 'Challenge not found' });
   });
+
+  it('filters challenges by difficulty', async () => {
+    const response = await request(app)
+      .get('/api/challenges?difficulty=Beginner');
+
+    expect(response.status).toBe(200);
+
+    expect(response.body).toHaveLength(1);
+
+    expect(response.body[0]).toMatchObject({
+      id: 'react-counter',
+      difficulty: 'Beginner',
+    });
+  });
 });
