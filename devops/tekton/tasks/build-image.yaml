@@ -5,12 +5,12 @@ metadata:
   namespace: tdd-tekton-pipelines
 
 spec:
-  description: Build a container image using Buildah.
+  description: Build and push a container image to Docker Hub using Buildah.
 
   params:
     - name: IMAGE
       type: string
-      description: Full image name including registry and tag.
+      description: Full Docker Hub image name including tag.
 
     - name: DOCKERFILE
       type: string
@@ -34,7 +34,7 @@ spec:
     - name: source
 
   steps:
-    - name: build
+    - name: build-and-push
       image: quay.io/buildah/stable:v1
       workingDir: $(workspaces.source.path)
 
@@ -49,7 +49,9 @@ spec:
         #!/usr/bin/env sh
         set -eu
 
-        echo "Configuring Buildah..."
+        echo "========================================"
+        echo "Configuring Buildah"
+        echo "========================================"
 
         mkdir -p /var/lib/containers
 
@@ -60,11 +62,15 @@ spec:
         graphroot = "/var/lib/containers/storage"
         EOF
 
-        echo "Buildah storage configuration:"
         buildah info
 
-        echo "Building image:"
-        echo "$(params.IMAGE)"
+        echo "========================================"
+        echo "Building image"
+        echo "========================================"
+
+        echo "Image: $(params.IMAGE)"
+        echo "Dockerfile: $(params.DOCKERFILE)"
+        echo "Context: $(params.CONTEXT)"
 
         buildah bud \
           --format=docker \
@@ -73,15 +79,23 @@ spec:
           -t "$(params.IMAGE)" \
           "$(params.CONTEXT)"
 
-        echo "Image build completed successfully."
-
-        echo "Available images:"
+        echo "========================================"
+        echo "Image build completed"
+        echo "========================================"
 
         buildah images
 
-        echo "Pushing image to Docker Hub..."
+        echo "========================================"
+        echo "Pushing image to Docker Hub"
+        echo "========================================"
 
-        buildah push "$(params.IMAGE)"
+        buildah push \
+          "$(params.IMAGE)" \
+          "docker://$(params.IMAGE)"
 
-        echo "Image push completed successfully."
-        
+        echo "========================================"
+        echo "Image push completed successfully"
+        echo "========================================"
+
+        echo "Pushed image:"
+        echo "docker://$(params.IMAGE)"
