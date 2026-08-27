@@ -79,23 +79,22 @@ spec:
           -t "$(params.IMAGE)" \
           "$(params.CONTEXT)"
 
-        echo "========================================"
-        echo "Image build completed"
-        echo "========================================"
+        echo "Image build completed successfully."
 
+        echo "Available images:"
         buildah images
 
-        echo "========================================"
-        echo "Pushing image to Docker Hub"
-        echo "========================================"
+        echo "Tagging image for Docker Hub..."
+
+        buildah tag \
+          "$(params.IMAGE)" \
+          "docker.io/$(params.IMAGE)"
+
+        echo "Pushing image to Docker Hub..."
 
         buildah push \
-          "$(params.IMAGE)" \
-          "docker://$(params.IMAGE)"
+          --authfile /root/.docker/config.json \
+          "docker.io/$(params.IMAGE)" \
+          "docker://docker.io/$(params.IMAGE)"
 
-        echo "========================================"
-        echo "Image push completed successfully"
-        echo "========================================"
-
-        echo "Pushed image:"
-        echo "docker://$(params.IMAGE)"
+        echo "Image push completed successfully."
