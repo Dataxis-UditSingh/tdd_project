@@ -1,0 +1,14 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: frontend-ci-
+  namespace: tdd-tekton-pipelines
+
+spec:
+  pipelineRef:
+    name: frontend-ci
+
+  workspaces:
+    - name: source
+      persistentVolumeClaim:
+        claimName: tekton-workspace-pvc

@@ -1,0 +1,118 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: backend-ci
+  namespace: tdd-tekton-pipelines
+
+spec:
+  description: >
+    Backend CI pipeline for the TDD React TypeScript monorepo.
+    Clones the repository, runs backend tests, builds the backend,
+    and builds the backend container image.
+
+  params:
+    - name: repo-url
+      type: string
+      description: Git repository URL.
+      default: https://github.com/Dataxis-UditSingh/tdd_project.git
+
+    - name: revision
+      type: string
+      description: Git branch, tag, or commit.
+      default: main
+
+    - name: image
+      type: string
+      description: Backend container image.
+      default: uditdataxis12345/tdd-react-backend:test
+
+    - name: dockerfile
+      type: string
+      description: Backend Dockerfile path.
+      default: devops/docker/backend/Dockerfile
+
+  workspaces:
+    - name: source
+
+  tasks:
+
+    # --------------------------------
+    # 1. Clone Repository
+    # --------------------------------
+    - name: clone
+      taskRef:
+        name: git-clone
+
+      params:
+        - name: url
+          value: $(params.repo-url)
+
+        - name: revision
+          value: $(params.revision)
+
+      workspaces:
+        - name: source
+          workspace: source
+
+
+    # --------------------------------
+    # 2. Backend Tests
+    # --------------------------------
+    - name: test
+      runAfter:
+        - clone
+
+      taskRef:
+        name: npm-test
+
+      params:
+        - name: workspace
+          value: backend
+
+      workspaces:
+        - name: source
+          workspace: source
+
+
+    # --------------------------------
+    # 3. Backend Build
+    # --------------------------------
+    - name: build
+      runAfter:
+        - test
+
+      taskRef:
+        name: npm-build
+
+      params:
+        - name: workspace
+          value: backend
+
+      workspaces:
+        - name: source
+          workspace: source
+
+
+    # --------------------------------
+    # 4. Build Backend Container Image
+    # --------------------------------
+    - name: build-image
+      runAfter:
+        - build
+
+      taskRef:
+        name: build-image
+
+      params:
+        - name: IMAGE
+          value: $(params.image)
+
+        - name: DOCKERFILE
+          value: $(params.dockerfile)
+
+        - name: CONTEXT
+          value: .
+
+      workspaces:
+        - name: source
+          workspace: source

@@ -3,6 +3,7 @@ kind: Task
 metadata:
   name: build-image
   namespace: tdd-tekton-pipelines
+
 spec:
   description: Build a container image using Buildah.
 
@@ -21,6 +22,14 @@ spec:
       description: Build context relative to the repository root.
       default: .
 
+  volumes:
+    - name: docker-config
+      secret:
+        secretName: dockerhub-credentials
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+
   workspaces:
     - name: source
 
@@ -28,14 +37,51 @@ spec:
     - name: build
       image: quay.io/buildah/stable:v1
       workingDir: $(workspaces.source.path)
+
+      volumeMounts:
+        - name: docker-config
+          mountPath: /root/.docker
+
       securityContext:
         privileged: true
+
       script: |
         #!/usr/bin/env sh
         set -eu
 
+        echo "Configuring Buildah..."
+
+        mkdir -p /var/lib/containers
+
+        cat > /etc/containers/storage.conf <<'EOF'
+        [storage]
+        driver = "vfs"
+        runroot = "/var/run/containers/storage"
+        graphroot = "/var/lib/containers/storage"
+        EOF
+
+        echo "Buildah storage configuration:"
+        buildah info
+
+        echo "Building image:"
+        echo "$(params.IMAGE)"
+
         buildah bud \
           --format=docker \
+          --arch=arm64 \
           -f "$(params.DOCKERFILE)" \
           -t "$(params.IMAGE)" \
           "$(params.CONTEXT)"
+
+        echo "Image build completed successfully."
+
+        echo "Available images:"
+
+        buildah images
+
+        echo "Pushing image to Docker Hub..."
+
+        buildah push "$(params.IMAGE)"
+
+        echo "Image push completed successfully."
+        

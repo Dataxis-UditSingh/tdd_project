@@ -1,0 +1,51 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: git-clone
+  namespace: tdd-tekton-pipelines
+
+spec:
+  description: Clone a public Git repository into the shared source workspace.
+
+  params:
+    - name: url
+      type: string
+      description: Git repository URL.
+
+    - name: revision
+      type: string
+      default: main
+      description: Git branch, tag, or commit.
+
+  workspaces:
+    - name: source
+
+  steps:
+    - name: clone
+      image: alpine/git:2.47.2
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/sh
+        set -eu
+
+        echo "Cloning repository..."
+        echo "URL: $(params.url)"
+        echo "Revision: $(params.revision)"
+
+        rm -rf ./* ./.??* || true
+
+        git init .
+
+        git remote add origin "$(params.url)"
+
+        git fetch --depth 1 origin "$(params.revision)"
+
+        git checkout FETCH_HEAD
+
+        echo "Repository cloned successfully."
+
+        echo "Commit:"
+        git rev-parse HEAD
+
+        echo "Repository contents:"
+        ls -la

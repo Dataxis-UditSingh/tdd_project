@@ -1,0 +1,46 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: frontend-workspace-debug
+  namespace: tdd-tekton-pipelines
+
+spec:
+  params:
+    - name: repo-url
+      type: string
+      default: https://github.com/Dataxis-UditSingh/tdd_project.git
+
+    - name: revision
+      type: string
+      default: main
+
+  workspaces:
+    - name: source
+
+  tasks:
+
+    - name: clone
+      taskRef:
+        name: git-clone
+
+      params:
+        - name: url
+          value: $(params.repo-url)
+
+        - name: revision
+          value: $(params.revision)
+
+      workspaces:
+        - name: source
+          workspace: source
+
+    - name: debug
+      runAfter:
+        - clone
+
+      taskRef:
+        name: debug-workspace
+
+      workspaces:
+        - name: source
+          workspace: source
