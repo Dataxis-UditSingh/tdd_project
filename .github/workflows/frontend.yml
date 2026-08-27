@@ -1,0 +1,62 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
+      - "package.json"
+      - "package-lock.json"
+
+  pull_request:
+    paths:
+      - "frontend/**"
+      - "package.json"
+      - "package-lock.json"
+
+jobs:
+  frontend-test-and-build:
+    name: Frontend Test & Build
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # --------------------------------
+      # 1. Checkout Repository
+      # --------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --------------------------------
+      # 2. Setup Node.js
+      # --------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # --------------------------------
+      # 3. Install Dependencies
+      # --------------------------------
+      - name: Install dependencies
+        run: npm ci
+
+      # --------------------------------
+      # 4. Run Frontend Tests
+      # --------------------------------
+      - name: Run frontend tests
+        run: npm run test --workspace frontend
+
+      # --------------------------------
+      # 5. Build Frontend
+      # --------------------------------
+      - name: Build frontend
+        run: npm run build --workspace frontend
+
+      # --------------------------------
+      # 6. Workflow Success
+      # --------------------------------
+      - name: Frontend CI completed
+        run: echo "Frontend tests and build completed successfully."
