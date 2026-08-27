@@ -1,0 +1,62 @@
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - "package.json"
+      - "package-lock.json"
+
+  pull_request:
+    paths:
+      - "backend/**"
+      - "package.json"
+      - "package-lock.json"
+
+jobs:
+  backend-test-and-build:
+    name: Backend Test & Build
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # --------------------------------
+      # 1. Checkout Repository
+      # --------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --------------------------------
+      # 2. Setup Node.js
+      # --------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # --------------------------------
+      # 3. Install Dependencies
+      # --------------------------------
+      - name: Install dependencies
+        run: npm ci
+
+      # --------------------------------
+      # 4. Run Backend Tests
+      # --------------------------------
+      - name: Run backend tests
+        run: npm run test --workspace backend
+
+      # --------------------------------
+      # 5. Build Backend
+      # --------------------------------
+      - name: Build backend
+        run: npm run build --workspace backend
+
+      # --------------------------------
+      # 6. Workflow Success
+      # --------------------------------
+      - name: Backend CI completed
+        run: echo "Backend tests and build completed successfully."
