@@ -1,0 +1,36 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+
+metadata:
+  name: github-backend-push-template
+  namespace: tdd-tekton-pipelines
+
+spec:
+  params:
+    - name: repo-url
+    - name: revision
+
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+
+      metadata:
+        generateName: github-backend-ci-
+
+      spec:
+        pipelineRef:
+          name: backend-ci
+
+        params:
+          - name: repo-url
+            value: $(tt.params.repo-url)
+
+          - name: revision
+            value: $(tt.params.revision)
+
+          - name: image
+            value: uditdataxis12345/tdd-react-backend:test
+
+        workspaces:
+          - name: source
+            emptyDir: {}

@@ -9,19 +9,69 @@ spec:
 
   triggers:
 
-    - name: github-push
+    # ==========================================
+    # Frontend CI Trigger
+    # ==========================================
+    - name: github-frontend-push
 
       interceptors:
         - ref:
             name: github
-
           params:
             - name: eventTypes
               value:
                 - push
+
+        - ref:
+            name: cel
+          params:
+            - name: filter
+              value: |
+                body.ref == 'refs/heads/main' &&
+                (
+                  body.commits.exists(c,
+                    c.added.exists(f, f.startsWith('frontend/')) ||
+                    c.modified.exists(f, f.startsWith('frontend/')) ||
+                    c.removed.exists(f, f.startsWith('frontend/'))
+                  )
+                )
 
       bindings:
         - ref: github-push-binding
 
       template:
         ref: github-push-template
+
+
+    # ==========================================
+    # Backend CI Trigger
+    # ==========================================
+    - name: github-backend-push
+
+      interceptors:
+        - ref:
+            name: github
+          params:
+            - name: eventTypes
+              value:
+                - push
+
+        - ref:
+            name: cel
+          params:
+            - name: filter
+              value: |
+                body.ref == 'refs/heads/main' &&
+                (
+                  body.commits.exists(c,
+                    c.added.exists(f, f.startsWith('backend/')) ||
+                    c.modified.exists(f, f.startsWith('backend/')) ||
+                    c.removed.exists(f, f.startsWith('backend/'))
+                  )
+                )
+
+      bindings:
+        - ref: github-push-binding
+
+      template:
+        ref: github-backend-push-template
