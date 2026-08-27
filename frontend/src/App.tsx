@@ -19,6 +19,7 @@ export default function App() {
       <section className="hero">
         <span className="eyebrow">TDD IS NON-NEGOTIABLE</span>
         <h1>TDD Challenge Lab</h1>
+        
         <p>
           Tests before functional code. Red → Green → Refactor.
         </p>
