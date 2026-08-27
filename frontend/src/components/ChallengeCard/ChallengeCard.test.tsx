@@ -13,8 +13,15 @@ describe('ChallengeCard', () => {
         concepts: ['React State', 'Events'],
     };
 
+    const onStart = vi.fn();
+
     it('renders the challenge title', () => {
-        render(<ChallengeCard challenge={challenge} />);
+        render(
+            <ChallengeCard
+                challenge={challenge}
+                onStart={onStart}
+            />,
+        );
 
         expect(
             screen.getByRole('heading', {
@@ -24,7 +31,12 @@ describe('ChallengeCard', () => {
     });
 
     it('renders the challenge description', () => {
-        render(<ChallengeCard challenge={challenge} />);
+        render(
+            <ChallengeCard
+                challenge={challenge}
+                onStart={onStart}
+            />,
+        );
 
         expect(
             screen.getByText('Build a counter using TDD.'),
@@ -32,7 +44,12 @@ describe('ChallengeCard', () => {
     });
 
     it('renders the challenge difficulty', () => {
-        render(<ChallengeCard challenge={challenge} />);
+        render(
+            <ChallengeCard
+                challenge={challenge}
+                onStart={onStart}
+            />,
+        );
 
         expect(
             screen.getByText('Beginner'),
@@ -40,7 +57,12 @@ describe('ChallengeCard', () => {
     });
 
     it('renders the start challenge button', () => {
-        render(<ChallengeCard challenge={challenge} />);
+        render(
+            <ChallengeCard
+                challenge={challenge}
+                onStart={onStart}
+            />,
+        );
 
         expect(
             screen.getByRole('button', {

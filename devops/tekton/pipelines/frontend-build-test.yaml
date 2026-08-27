@@ -1,0 +1,72 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: frontend-build-test
+  namespace: tdd-tekton-pipelines
+
+spec:
+  description: Clone the repository and build the frontend container image.
+
+  params:
+    - name: repo-url
+      type: string
+      default: https://github.com/Dataxis-UditSingh/tdd_project.git
+
+    - name: revision
+      type: string
+      default: main
+
+    - name: image
+      type: string
+      default: tdd-react-frontend:test
+
+  workspaces:
+    - name: source
+
+  tasks:
+
+    # -----------------------------
+    # Clone Repository
+    # -----------------------------
+    - name: clone
+      taskRef:
+        name: git-clone
+
+      params:
+        - name: url
+          value: $(params.repo-url)
+
+        - name: revision
+          value: $(params.revision)
+
+        - name: deleteExisting
+          value: "true"
+
+      workspaces:
+        - name: output
+          workspace: source
+
+
+    # -----------------------------
+    # Build Frontend Image
+    # -----------------------------
+    - name: build-image
+      runAfter:
+        - clone
+
+      taskRef:
+        name: build-image
+
+      params:
+        - name: IMAGE
+          value: $(params.image)
+
+        - name: DOCKERFILE
+          value: devops/docker/frontend/Dockerfile
+
+        - name: CONTEXT
+          value: .
+
+      workspaces:
+        - name: source
+          workspace: source

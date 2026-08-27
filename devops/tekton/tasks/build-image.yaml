@@ -1,0 +1,41 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: build-image
+  namespace: tdd-tekton-pipelines
+spec:
+  description: Build a container image using Buildah.
+
+  params:
+    - name: IMAGE
+      type: string
+      description: Full image name including registry and tag.
+
+    - name: DOCKERFILE
+      type: string
+      description: Path to the Dockerfile relative to the repository root.
+      default: devops/docker/frontend/Dockerfile
+
+    - name: CONTEXT
+      type: string
+      description: Build context relative to the repository root.
+      default: .
+
+  workspaces:
+    - name: source
+
+  steps:
+    - name: build
+      image: quay.io/buildah/stable:v1
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        privileged: true
+      script: |
+        #!/usr/bin/env sh
+        set -eu
+
+        buildah bud \
+          --format=docker \
+          -f "$(params.DOCKERFILE)" \
+          -t "$(params.IMAGE)" \
+          "$(params.CONTEXT)"
