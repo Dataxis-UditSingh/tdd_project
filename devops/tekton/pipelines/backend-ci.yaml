@@ -24,7 +24,7 @@ spec:
     - name: image
       type: string
       description: Backend container image.
-      default: uditdataxis12345/tdd-react-backend:test
+      default: uditdataxis12345/tdd-react-backend
 
     - name: dockerfile
       type: string
@@ -54,13 +54,27 @@ spec:
         - name: source
           workspace: source
 
+    # --------------------------------
+    # 2. Generate Git SHA
+    # --------------------------------
+    - name: git-sha
+      runAfter:
+        - clone
+
+      taskRef:
+        name: git-sha
+
+      workspaces:
+        - name: source
+          workspace: source
+
 
     # --------------------------------
     # 2. Backend Tests
     # --------------------------------
     - name: test
       runAfter:
-        - clone
+        - git-sha
 
       taskRef:
         name: npm-test
@@ -106,6 +120,31 @@ spec:
       params:
         - name: IMAGE
           value: $(params.image)
+
+        - name: DOCKERFILE
+          value: $(params.dockerfile)
+
+        - name: CONTEXT
+          value: .
+
+      workspaces:
+        - name: source
+          workspace: source
+
+    # --------------------------------
+    # 5. Build & Push Backend Image
+    # --------------------------------
+    - name: build-image
+      runAfter:
+        - build
+        - git-sha
+
+      taskRef:
+        name: build-image
+
+      params:
+        - name: IMAGE
+          value: $(params.image):$(tasks.git-sha.results.short-sha)
 
         - name: DOCKERFILE
           value: $(params.dockerfile)

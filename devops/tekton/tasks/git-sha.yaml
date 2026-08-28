@@ -1,0 +1,30 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: git-sha
+  namespace: tdd-tekton-pipelines
+
+spec:
+  description: Generate a short Git commit SHA from the cloned repository.
+
+  workspaces:
+    - name: source
+
+  results:
+    - name: short-sha
+      description: Short Git commit SHA.
+
+  steps:
+    - name: generate-sha
+      image: alpine/git:2.47.2
+      workingDir: $(workspaces.source.path)
+
+      script: |
+        #!/bin/sh
+        set -eu
+
+        SHA="$(git rev-parse --short=7 HEAD)"
+
+        echo "Git commit SHA: $SHA"
+
+        printf "%s" "$SHA" > "$(results.short-sha.path)"

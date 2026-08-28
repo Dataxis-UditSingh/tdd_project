@@ -23,8 +23,8 @@ spec:
 
     - name: image
       type: string
-      description: Frontend container image.
-      default: uditdataxis12345/tdd-react-frontend:test
+      description: Frontend Docker Hub repository.
+      default: uditdataxis12345/tdd-react-frontend
 
     - name: dockerfile
       type: string
@@ -49,6 +49,20 @@ spec:
 
         - name: revision
           value: $(params.revision)
+
+      workspaces:
+        - name: source
+          workspace: source
+
+    # --------------------------------
+    # 2. Generate Git SHA
+    # --------------------------------
+    - name: git-sha
+      runAfter:
+        - clone
+
+      taskRef:
+        name: git-sha
 
       workspaces:
         - name: source
@@ -94,7 +108,7 @@ spec:
 
 
     # --------------------------------
-    # 4. Build Frontend Container Image
+    # 4. Build & Push Frontend Image
     # --------------------------------
     - name: build-image
       runAfter:
@@ -105,7 +119,7 @@ spec:
 
       params:
         - name: IMAGE
-          value: $(params.image)
+          value: $(params.image):$(params.revision)
 
         - name: DOCKERFILE
           value: $(params.dockerfile)

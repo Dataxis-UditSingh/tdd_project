@@ -29,7 +29,7 @@ spec:
             value: $(tt.params.revision)
 
           - name: image
-            value: uditdataxis12345/tdd-react-backend:test
+            value: uditdataxis12345/tdd-react-backend
 
         workspaces:
           - name: source
