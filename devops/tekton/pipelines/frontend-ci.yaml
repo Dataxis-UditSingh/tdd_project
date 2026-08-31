@@ -119,7 +119,7 @@ spec:
 
       params:
         - name: IMAGE
-          value: $(params.image):$(params.revision)
+          value: $(params.image):$(tasks.git-sha.results.short-sha)
 
         - name: DOCKERFILE
           value: $(params.dockerfile)
