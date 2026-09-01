@@ -23,8 +23,8 @@ spec:
         email: fluxcdbot@users.noreply.github.com
 
       messageTemplate: |
-        Update backend image to {{range .Updated.Images}}{{.}}{{end}}
-
+        Update backend image 
+        
     push:
       branch: main
 
