@@ -33,4 +33,5 @@ spec:
 
         workspaces:
           - name: source
-            emptyDir: {}
+            persistentVolumeClaim:
+              claimName: tekton-workspace-pvc
