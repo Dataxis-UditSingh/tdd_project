@@ -1,0 +1,9 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: tdd-react-frontend
+  namespace: flux-system
+
+spec:
+  image: docker.io/uditdataxis12345/tdd-react-frontend
+  interval: 1m

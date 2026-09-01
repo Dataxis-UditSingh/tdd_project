@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: uditdataxis12345/tdd-react-frontend:test
+          image: uditdataxis12345/tdd-react-frontend:test # {"$imagepolicy": "flux-system:tdd-react-frontend"}
 
           ports:
             - containerPort: 80

@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: uditdataxis12345/tdd-react-backend:test
+          image: uditdataxis12345/tdd-react-backend:test # {"$imagepolicy": "flux-system:tdd-react-backend"}
 
           ports:
             - containerPort: 3000

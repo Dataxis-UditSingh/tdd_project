@@ -70,11 +70,11 @@ spec:
 
 
     # --------------------------------
-    # 2. Backend Tests
+    # 3. Backend Tests
     # --------------------------------
     - name: test
       runAfter:
-        - git-sha
+        - clone
 
       taskRef:
         name: npm-test
@@ -89,7 +89,7 @@ spec:
 
 
     # --------------------------------
-    # 3. Backend Build
+    # 4. Backend Build
     # --------------------------------
     - name: build
       runAfter:
@@ -108,30 +108,6 @@ spec:
 
 
     # --------------------------------
-    # 4. Build Backend Container Image
-    # --------------------------------
-    - name: build-image
-      runAfter:
-        - build
-
-      taskRef:
-        name: build-image
-
-      params:
-        - name: IMAGE
-          value: $(params.image)
-
-        - name: DOCKERFILE
-          value: $(params.dockerfile)
-
-        - name: CONTEXT
-          value: .
-
-      workspaces:
-        - name: source
-          workspace: source
-
-    # --------------------------------
     # 5. Build & Push Backend Image
     # --------------------------------
     - name: build-image
@@ -144,7 +120,7 @@ spec:
 
       params:
         - name: IMAGE
-          value: $(params.image):$(tasks.git-sha.results.short-sha)
+          value: $(params.image):$(tasks.git-sha.results.image-tag)
 
         - name: DOCKERFILE
           value: $(params.dockerfile)

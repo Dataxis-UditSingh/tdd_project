@@ -5,17 +5,17 @@ metadata:
   namespace: tdd-tekton-pipelines
 
 spec:
-  description: Generate a short Git commit SHA from the cloned repository.
+  description: Generate a timestamped Git commit tag.
 
   workspaces:
     - name: source
 
   results:
-    - name: short-sha
-      description: Short Git commit SHA.
+    - name: image-tag
+      description: Timestamped Git commit tag.
 
   steps:
-    - name: generate-sha
+    - name: generate-tag
       image: alpine/git:2.47.2
       workingDir: $(workspaces.source.path)
 
@@ -24,7 +24,11 @@ spec:
         set -eu
 
         SHA="$(git rev-parse --short=7 HEAD)"
+        TIMESTAMP="$(date -u +%Y%m%d%H%M%S)"
+
+        TAG="${TIMESTAMP}-${SHA}"
 
         echo "Git commit SHA: $SHA"
+        echo "Image tag: $TAG"
 
-        printf "%s" "$SHA" > "$(results.short-sha.path)"
+        printf "%s" "$TAG" > "$(results.image-tag.path)"

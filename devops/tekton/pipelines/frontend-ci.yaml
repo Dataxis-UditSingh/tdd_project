@@ -113,13 +113,14 @@ spec:
     - name: build-image
       runAfter:
         - build
+        - git-sha
 
       taskRef:
         name: build-image
 
       params:
         - name: IMAGE
-          value: $(params.image):$(tasks.git-sha.results.short-sha)
+          value: $(params.image):$(tasks.git-sha.results.image-tag)
 
         - name: DOCKERFILE
           value: $(params.dockerfile)

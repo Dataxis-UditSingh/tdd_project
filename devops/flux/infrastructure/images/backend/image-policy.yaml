@@ -1,0 +1,16 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: tdd-react-backend
+  namespace: flux-system
+
+spec:
+  imageRepositoryRef:
+    name: tdd-react-backend
+
+  filterTags:
+    pattern: '^[0-9]{14}-[a-f0-9]{7}$'
+
+  policy:
+    alphabetical:
+      order: asc
