@@ -3,32 +3,25 @@ kind: Deployment
 metadata:
   name: tdd-frontend
   namespace: tdd-frontend
-
 spec:
   replicas: 1
-
   selector:
     matchLabels:
       app: tdd-frontend
-
   template:
     metadata:
       labels:
         app: tdd-frontend
-
     spec:
       containers:
         - name: frontend
-          image: uditdataxis12345/tdd-react-frontend:test # {"$imagepolicy": "flux-system:tdd-react-frontend"}
-
+          image: docker.io/uditdataxis12345/tdd-react-frontend:20260901071705-5b7b95c # {"$imagepolicy": "flux-system:tdd-react-frontend"}
           ports:
             - containerPort: 80
-
           resources:
             requests:
               cpu: 100m
               memory: 128Mi
-
             limits:
               cpu: 500m
               memory: 256Mi
