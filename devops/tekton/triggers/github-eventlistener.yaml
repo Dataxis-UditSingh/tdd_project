@@ -13,6 +13,8 @@ spec:
     # Frontend CI Trigger
     # ==========================================
     - name: github-frontend-push
+      bindings:
+        - ref: github-push-binding
 
       interceptors:
         - ref:
@@ -30,14 +32,11 @@ spec:
                 body.ref == 'refs/heads/main' &&
                 (
                   body.commits.exists(c,
-                    c.added.exists(f, f.startsWith('frontend/')) ||
-                    c.modified.exists(f, f.startsWith('frontend/')) ||
-                    c.removed.exists(f, f.startsWith('frontend/'))
+                    c.added.exists(f, f.startsWith('frontend/') || f.startsWith('devops/docker/frontend/')) ||
+                    c.modified.exists(f, f.startsWith('frontend/') || f.startsWith('devops/docker/frontend/')) ||
+                    c.removed.exists(f, f.startsWith('frontend/') || f.startsWith('devops/docker/frontend/'))
                   )
                 )
-
-      bindings:
-        - ref: github-push-binding
 
       template:
         ref: github-push-template
