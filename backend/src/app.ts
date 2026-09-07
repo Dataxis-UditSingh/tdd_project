@@ -1,11 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import { challenges } from './data.js';
+import { requestLogger } from './middleware/request-logger.js';
+
 
 export const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(requestLogger);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
