@@ -1,3 +1,4 @@
+import { trace } from '@opentelemetry/api';
 import { ConsoleTransport, LogLayer } from 'loglayer';
 import { HttpTransport } from '@loglayer/transport-http';
 
@@ -24,8 +25,45 @@ const httpTransport = new HttpTransport({
 
   enableBatchSend: false,
 
-  payloadTemplate: ({ logLevel, message, data }) =>
-    JSON.stringify({
+  payloadTemplate: ({ logLevel, message, data }) => {
+    const activeSpan = trace.getActiveSpan();
+    const spanContext = activeSpan?.spanContext();
+
+    const attributes = [
+      {
+        key: 'service.name',
+        value: {
+          stringValue: 'tdd-backend',
+        },
+      },
+
+      {
+        key: 'trace.id',
+        value: {
+          stringValue: spanContext?.traceId ?? '',
+        },
+      },
+
+      {
+        key: 'span.id',
+        value: {
+          stringValue: spanContext?.spanId ?? '',
+        },
+      },
+    ];
+
+    if (data) {
+      attributes.push(
+        ...Object.entries(data).map(([key, value]) => ({
+          key,
+          value: {
+            stringValue: String(value),
+          },
+        })),
+      );
+    }
+
+    return JSON.stringify({
       resourceLogs: [
         {
           resource: {
@@ -42,25 +80,23 @@ const httpTransport = new HttpTransport({
             {
               logRecords: [
                 {
+                  timeUnixNano: String(Date.now() * 1_000_000),
+
+                  severityText: logLevel.toUpperCase(),
+
                   body: {
                     stringValue: message,
                   },
-                  severityText: logLevel.toUpperCase(),
-                  attributes: data
-                    ? Object.entries(data).map(([key, value]) => ({
-                        key,
-                        value: {
-                          stringValue: String(value),
-                        },
-                      }))
-                    : [],
+
+                  attributes,
                 },
               ],
             },
           ],
         },
       ],
-    }),
+    });
+  },
 
   onDebug: (entry) => {
     console.log('[HTTP TRANSPORT DEBUG]', {
