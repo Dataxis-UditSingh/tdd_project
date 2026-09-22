@@ -6,3 +6,4 @@ resources:
   - ocirepository.yaml
   - helmrelease.yaml
   - config/gatewayclass.yaml
+  - config/gateway.yaml
