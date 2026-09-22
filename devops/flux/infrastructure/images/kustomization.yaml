@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - frontend/image-repository.yaml
+  - frontend/image-policy.yaml
+  - backend/image-repository.yaml
+  - backend/image-policy.yaml
+  - automation/backend-image-update.yaml
+  - automation/frontend-image-update.yaml

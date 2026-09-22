@@ -1,0 +1,43 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: envoy-gateway
+  namespace: envoy-gateway-system
+  labels:
+    app.kubernetes.io/managed-by: flux
+spec:
+  interval: 30m
+  releaseName: eg
+
+  chartRef:
+    kind: OCIRepository
+    name: gateway-helm
+
+  upgrade:
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 5m
+
+  values:
+    config:
+      envoyGateway:
+        gateway:
+          controllerName: gateway.envoyproxy.io/gatewayclass-controller
+
+        provider:
+          type: Kubernetes
+
+        logging:
+          level:
+            default: info
+
+    deployment:
+      envoyGateway:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+
+          limits:
+            cpu: 500m
+            memory: 1Gi
