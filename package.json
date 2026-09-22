@@ -2,24 +2,60 @@
   "name": "tdd-challenge-app",
   "private": true,
   "version": "1.0.0",
+  "description": "TDD Challenge desktop application",
+  "author": "Udit Singh",
+  "main": "electron/main.js",
   "workspaces": [
     "frontend",
     "backend"
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev --workspace frontend\" \"npm run dev --workspace backend\"",
+    "electron": "electron .",
+    "electron:dev": "concurrently -k \"npm run dev --workspace frontend\" \"npm run electron\"",
+    "prepare:backend-runtime": "node scripts/prepare-backend-runtime.js",
+    "build": "npm run build --workspace frontend && npm run build --workspace backend",
+    "electron:build": "npm run build && electron-builder",
     "test": "npm run test:frontend && npm run test:backend",
     "test:frontend": "npm run test --workspace frontend",
     "test:backend": "npm run test --workspace backend",
     "test:watch": "concurrently \"npm run test:watch --workspace frontend\" \"npm run test:watch --workspace backend\"",
-    "test:coverage": "npm run test:coverage --workspace frontend && npm run test:coverage --workspace backend",
-    "build": "npm run build --workspace frontend && npm run build --workspace backend"
+    "test:coverage": "npm run test:coverage --workspace frontend && npm run test:coverage --workspace backend"
+  },
+  "build": {
+    "appId": "com.dataxis.tddchallenge",
+    "productName": "TDD Challenge",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "frontend/dist/**/*"
+    ],
+    "afterPack": "scripts/after-pack.js",
+    "mac": {
+      "target": "dmg",
+      "icon": "electron/assets/icon.icns",
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "electron/assets/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "electron/assets/icon.png",
+      "category": "Development"
+    }
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.5",
-    "concurrently": "^9.1.2",
-    "jsdom": "^30.0.1"
+    "concurrently": "^9.2.4",
+    "electron": "^44.4.3",
+    "electron-builder": "^26.15.3",
+    "jsdom": "^30.0.1",
+    "wait-on": "^9.1.0"
   }
 }

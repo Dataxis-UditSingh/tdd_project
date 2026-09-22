@@ -29,25 +29,13 @@ const httpTransport = new HttpTransport({
     const activeSpan = trace.getActiveSpan();
     const spanContext = activeSpan?.spanContext();
 
+    const now = String(Date.now() * 1_000_000);
+
     const attributes = [
       {
         key: 'service.name',
         value: {
           stringValue: 'tdd-backend',
-        },
-      },
-
-      {
-        key: 'trace.id',
-        value: {
-          stringValue: spanContext?.traceId ?? '',
-        },
-      },
-
-      {
-        key: 'span.id',
-        value: {
-          stringValue: spanContext?.spanId ?? '',
         },
       },
     ];
@@ -76,17 +64,22 @@ const httpTransport = new HttpTransport({
               },
             ],
           },
+
           scopeLogs: [
             {
               logRecords: [
                 {
-                  timeUnixNano: String(Date.now() * 1_000_000),
+                  timeUnixNano: now,
+                  observedTimeUnixNano: now,
 
                   severityText: logLevel.toUpperCase(),
 
                   body: {
                     stringValue: message,
                   },
+
+                  traceId: spanContext?.traceId ?? '',
+                  spanId: spanContext?.spanId ?? '',
 
                   attributes,
                 },

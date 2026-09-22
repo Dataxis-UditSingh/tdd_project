@@ -1,6 +1,8 @@
 import type { Challenge } from './types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? '' : 'http://localhost:4000');
 
 export async function getChallenges(): Promise<Challenge[]> {
   const response = await fetch(`${API_BASE_URL}/api/challenges`);

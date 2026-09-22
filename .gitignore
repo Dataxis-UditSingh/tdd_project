@@ -5,3 +5,17 @@ coverage
 .env
 .DS_Store
 .vite
+
+# Electron build output
+release/
+
+# Electron backend runtime
+backend-runtime/
+backend-runtime-staged/
+
+# Build output
+frontend/dist/
+backend/dist/
+
+# macOS
+.DS_Store
