@@ -10,8 +10,7 @@ import {
 } from '@opentelemetry/resources';
 
 const metricsEndpoint =
-  import.meta.env.VITE_OTEL_METRICS_ENDPOINT ??
-  '/v1/metrics';
+  import.meta.env.VITE_OTEL_METRICS_ENDPOINT ?? '/v1/metrics';
 
 const resource = defaultResource().merge(
   resourceFromAttributes({
@@ -61,10 +60,15 @@ export const apiErrorCounter = meter.createCounter(
   },
 );
 
-const manualTestCounter = meter.createCounter(
+/*
+ * Temporary dummy metric for end-to-end verification.
+ * This proves that a non-empty metric data point is
+ * actually exported to the remote OTLP endpoint.
+ */
+const dummyMetric = meter.createCounter(
   'tdd.frontend.metrics.test',
   {
-    description: 'Temporary metric used to verify OTLP metrics export',
+    description: 'Temporary frontend metrics connectivity test',
     unit: '{test}',
   },
 );
@@ -89,20 +93,27 @@ export function recordApiRequest(
   }
 }
 
-export async function exportTestMetric(): Promise<void> {
-  manualTestCounter.add(1, {
+/*
+ * Development-only dummy metric.
+ * It is automatically sent once when the frontend starts.
+ */
+if (import.meta.env.DEV) {
+  dummyMetric.add(1, {
     test: 'manual',
+    environment: 'development',
   });
 
-  await meterProvider.forceFlush();
-
-  console.log('OTel metrics test export completed');
-}
-
-if (import.meta.env.DEV) {
-  (
-    window as typeof window & {
-      __exportOtelMetrics?: () => Promise<void>;
-    }
-  ).__exportOtelMetrics = exportTestMetric;
+  void meterProvider.forceFlush().then(
+    () => {
+      console.log(
+        '[OTEL METRICS] Dummy metric exported successfully',
+      );
+    },
+    (error) => {
+      console.error(
+        '[OTEL METRICS] Dummy metric export failed',
+        error,
+      );
+    },
+  );
 }

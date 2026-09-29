@@ -4,4 +4,5 @@ kind: Kustomization
 resources:
   - bootstrap/infrastructure-kustomization.yaml
   - bootstrap/keda-kustomization.yaml
+  - bootstrap/kyverno-kustomization.yaml
   - bootstrap/applications-kustomization.yaml

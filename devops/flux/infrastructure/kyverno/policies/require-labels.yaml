@@ -1,0 +1,25 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-standard-labels
+  annotations:
+    policies.kyverno.io/title: Require Standard Labels
+    policies.kyverno.io/category: Best Practices
+    policies.kyverno.io/description: Require application and environment labels on Deployments.
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: validate-deployment-labels
+      match:
+        any:
+          - resources:
+              kinds:
+                - Deployment
+      validate:
+        message: "Deployments must have app and environment labels."
+        pattern:
+          metadata:
+            labels:
+              app: "?*"
+              environment: "?*"
