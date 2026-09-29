@@ -10,12 +10,15 @@ describe('API client', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
+        status: 200,
         ok: true,
         json: async () => [{ id: 'one', title: 'One' }],
       }),
     );
 
-    await expect(getChallenges()).resolves.toEqual([{ id: 'one', title: 'One' }]);
+    await expect(getChallenges()).resolves.toEqual([
+      { id: 'one', title: 'One' },
+    ]);
   });
 
   it('throws when a challenge is missing', async () => {
@@ -27,6 +30,8 @@ describe('API client', () => {
       }),
     );
 
-    await expect(getChallenge('missing')).rejects.toThrow('Challenge not found');
+    await expect(getChallenge('missing')).rejects.toThrow(
+      'Challenge not found',
+    );
   });
 });

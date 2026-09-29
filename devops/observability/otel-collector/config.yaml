@@ -7,6 +7,14 @@ receivers:
     protocols:
       http:
         endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - http://localhost:5173
+          allowed_headers:
+            - content-type
+            - traceparent
+            - tracestate
+          max_age: 7200
 
 processors:
   batch:

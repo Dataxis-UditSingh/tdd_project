@@ -2,22 +2,38 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
-import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
+import {
+  BatchSpanProcessor,
+  WebTracerProvider,
+} from '@opentelemetry/sdk-trace-web';
+import {
+  defaultResource,
+  resourceFromAttributes,
+} from '@opentelemetry/resources';
+
+import { getClientId } from './client-id';
 
 const traceEndpoint =
   import.meta.env.VITE_OTEL_TRACES_ENDPOINT ??
-  'http://192.168.29.225:4318/v1/traces';
+  '/v1/traces';
+
+const clientId = getClientId();
+
+const resource = defaultResource().merge(
+  resourceFromAttributes({
+    'service.name': 'tdd-frontend',
+    'client.id': clientId,
+  }),
+);
 
 const traceExporter = new OTLPTraceExporter({
   url: traceEndpoint,
 });
 
 const provider = new WebTracerProvider({
+  resource,
   spanProcessors: [
-    // Use batch processing so the browser doesn't make
-    // one export request for every span.
-    // We'll keep the default processor configuration here.
-    // The exporter sends to the external OTLP endpoint.
+    new BatchSpanProcessor(traceExporter),
   ],
 });
 
@@ -28,10 +44,16 @@ provider.register({
 registerInstrumentations({
   instrumentations: [
     new FetchInstrumentation({
+      ignoreUrls: [
+        /\/v1\/logs$/,
+        /\/v1\/traces$/,
+      ],
       propagateTraceHeaderCorsUrls: [
-        /192\.168\.29\.225:4318/,
         /localhost:4000/,
       ],
+      applyCustomAttributesOnSpan: (span) => {
+        span.setAttribute('client.id', clientId);
+      },
     }),
   ],
 });
