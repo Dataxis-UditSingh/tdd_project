@@ -32,6 +32,10 @@ export const meterProvider = new MeterProvider({
   readers: [metricReader],
 });
 
+console.log('[OTEL METRICS] initialized', {
+  endpoint: metricsEndpoint,
+});
+
 metrics.setGlobalMeterProvider(meterProvider);
 
 const meter = metrics.getMeter('tdd-frontend', '1.0.0');
@@ -60,19 +64,6 @@ export const apiErrorCounter = meter.createCounter(
   },
 );
 
-/*
- * Temporary dummy metric for end-to-end verification.
- * This proves that a non-empty metric data point is
- * actually exported to the remote OTLP endpoint.
- */
-const dummyMetric = meter.createCounter(
-  'tdd.frontend.metrics.test',
-  {
-    description: 'Temporary frontend metrics connectivity test',
-    unit: '{test}',
-  },
-);
-
 export function recordApiRequest(
   method: string,
   endpoint: string,
@@ -93,27 +84,3 @@ export function recordApiRequest(
   }
 }
 
-/*
- * Development-only dummy metric.
- * It is automatically sent once when the frontend starts.
- */
-if (import.meta.env.DEV) {
-  dummyMetric.add(1, {
-    test: 'manual',
-    environment: 'development',
-  });
-
-  void meterProvider.forceFlush().then(
-    () => {
-      console.log(
-        '[OTEL METRICS] Dummy metric exported successfully',
-      );
-    },
-    (error) => {
-      console.error(
-        '[OTEL METRICS] Dummy metric export failed',
-        error,
-      );
-    },
-  );
-}

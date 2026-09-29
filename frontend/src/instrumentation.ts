@@ -13,6 +13,8 @@ import {
 
 import { getClientId } from './client-id';
 
+import './metrics';
+
 const traceEndpoint =
   import.meta.env.VITE_OTEL_TRACES_ENDPOINT ??
   '/v1/traces';

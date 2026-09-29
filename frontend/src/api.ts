@@ -1,5 +1,6 @@
 import type { Challenge } from './types';
 import { logger } from './logger';
+import { recordApiRequest } from './metrics';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
@@ -14,6 +15,13 @@ export async function getChallenges(): Promise<Challenge[]> {
   try {
     const response = await fetch(url);
     const durationMs = Date.now() - startedAt;
+
+    recordApiRequest(
+      'GET',
+      '/api/challenges',
+      response.status,
+      durationMs,
+    );
 
     if (!response.ok) {
       logger.warn(
@@ -31,7 +39,10 @@ export async function getChallenges(): Promise<Challenge[]> {
   } catch (error) {
     const durationMs = Date.now() - startedAt;
 
-    if (error instanceof Error && error.message === 'Unable to load challenges') {
+    if (
+      error instanceof Error &&
+      error.message === 'Unable to load challenges'
+    ) {
       throw error;
     }
 
@@ -52,6 +63,13 @@ export async function getChallenge(id: string): Promise<Challenge> {
   try {
     const response = await fetch(url);
     const durationMs = Date.now() - startedAt;
+
+    recordApiRequest(
+      'GET',
+      `/api/challenges/${id}`,
+      response.status,
+      durationMs,
+    );
 
     if (response.status === 404) {
       logger.warn(
