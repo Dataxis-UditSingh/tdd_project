@@ -5,4 +5,5 @@ resources:
   - bootstrap/infrastructure-kustomization.yaml
   - bootstrap/keda-kustomization.yaml
   - bootstrap/kyverno-kustomization.yaml
+  - bootstrap/kyverno-policies-kustomization.yaml
   - bootstrap/applications-kustomization.yaml
