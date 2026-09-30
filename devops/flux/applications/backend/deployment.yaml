@@ -26,6 +26,19 @@ spec:
           ports:
             - containerPort: 3000
 
+          env:
+            - name: OTEL_LOGS_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: tdd-backend-secrets
+                  key: OTEL_LOGS_ENDPOINT
+
+            - name: OTEL_METRICS_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: tdd-backend-secrets
+                  key: OTEL_METRICS_ENDPOINT
+
           resources:
             requests:
               cpu: 100m
