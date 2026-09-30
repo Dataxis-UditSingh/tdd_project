@@ -1,0 +1,54 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: openbao
+  namespace: flux-system
+spec:
+  interval: 10m
+
+  releaseName: openbao
+
+  targetNamespace: openbao
+
+  chart:
+    spec:
+      chart: openbao
+      version: "0.28.6"
+      sourceRef:
+        kind: HelmRepository
+        name: openbao
+        namespace: flux-system
+      interval: 1h
+
+  values:
+    server:
+      standalone:
+        enabled: true
+
+      dataStorage:
+        enabled: true
+        size: 1Gi
+
+      auditStorage:
+        enabled: true
+        size: 1Gi
+
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+    injector:
+      enabled: true
+
+    csi:
+      enabled: true
+
+  install:
+    createNamespace: true
+
+  upgrade:
+    cleanupOnFail: true
