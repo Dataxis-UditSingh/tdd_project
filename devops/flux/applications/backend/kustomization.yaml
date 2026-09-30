@@ -8,3 +8,4 @@ resources:
   - service.yaml
   - httproute.yaml
   - scaledobject.yaml
+  - secretproviderclass.yaml
