@@ -1,0 +1,28 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: secrets-store-csi-driver
+  namespace: flux-system
+spec:
+  interval: 10m
+  releaseName: csi-secrets-store
+  targetNamespace: kube-system
+  install:
+    createNamespace: false
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  chart:
+    spec:
+      chart: secrets-store-csi-driver
+      version: "1.6.1"
+      sourceRef:
+        kind: HelmRepository
+        name: secrets-store-csi-driver
+        namespace: flux-system
+  values:
+    syncSecret:
+      enabled: true
+    enableSecretRotation: true
