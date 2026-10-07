@@ -2,7 +2,6 @@ const fs = require("fs");
 const path = require("path");
 
 const source = path.resolve(__dirname, "..", "backend-runtime");
-const builtBackend = path.resolve(__dirname, "..", "backend", "dist");
 const destination = path.resolve(
   __dirname,
   "..",
@@ -29,13 +28,6 @@ console.log("Destination:", destination);
 removeDirectory(destination);
 
 copyDirectory(source, destination);
-
-if (!fs.existsSync(builtBackend)) {
-  throw new Error("Built backend was not found. Run the backend build first.");
-}
-
-removeDirectory(path.join(destination, "dist"));
-copyDirectory(builtBackend, path.join(destination, "dist"));
 
 console.log("Backend runtime prepared successfully.");
 

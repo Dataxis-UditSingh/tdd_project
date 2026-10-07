@@ -19,7 +19,3 @@ backend/dist/
 
 # macOS
 .DS_Store
-
-# Playwright
-frontend/playwright-report/
-frontend/test-results/

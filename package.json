@@ -15,7 +15,7 @@
     "electron:dev": "concurrently -k \"npm run dev --workspace frontend\" \"npm run electron\"",
     "prepare:backend-runtime": "node scripts/prepare-backend-runtime.js",
     "build": "npm run build --workspace frontend && npm run build --workspace backend",
-    "electron:build": "npm run build && npm run prepare:backend-runtime && electron-builder",
+    "electron:build": "npm run build && electron-builder",
     "test": "npm run test:frontend && npm run test:backend",
     "test:frontend": "npm run test --workspace frontend",
     "test:backend": "npm run test --workspace backend",
