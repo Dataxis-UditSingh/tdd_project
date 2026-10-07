@@ -23,3 +23,8 @@ backend/dist/
 # Playwright
 frontend/playwright-report/
 frontend/test-results/
+
+# Generated Speakeasy SDK
+sdk/
+# Generated Speakeasy SDK
+sdk/

@@ -1,0 +1,57 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: zap-baseline
+  namespace: tdd-tekton-pipelines
+
+spec:
+  params:
+    - name: target-url
+      type: string
+      description: Target URL for the OWASP ZAP baseline scan.
+
+  workspaces:
+    - name: source
+
+  steps:
+    - name: zap-baseline
+      image: ghcr.io/zaproxy/zaproxy:stable
+
+      workingDir: /zap/wrk
+
+      script: |
+        #!/bin/bash
+        set -e
+
+        echo "========================================"
+        echo "OWASP ZAP Baseline Security Scan"
+        echo "========================================"
+        echo "Target: $(params.target-url)"
+
+        mkdir -p /zap/wrk/zap-reports
+
+        zap-baseline.py \
+          -t "$(params.target-url)" \
+          -m 1 \
+          -r zap-reports/zap-report.html \
+          -w zap-reports/zap-report.md \
+          -x zap-reports/zap-report.xml \
+          -J zap-reports/zap-report.json \
+          -s \
+          -I
+
+        echo "========================================"
+        echo "OWASP ZAP Baseline Scan completed"
+        echo "========================================"
+
+        echo "Generated reports:"
+        ls -lh /zap/wrk/zap-reports/
+
+      volumeMounts:
+        - name: zap-workspace
+          mountPath: /zap/wrk
+
+  volumes:
+    - name: zap-workspace
+      persistentVolumeClaim:
+        claimName: tekton-workspace-pvc

@@ -119,13 +119,31 @@ spec:
         - name: source
           workspace: source
 
+    # --------------------------------
+    # 5. Tekton Zap Task
+    # --------------------------------
+    - name: zap-baseline
+      runAfter:
+        - playwright-e2e
+
+      taskRef:
+        name: zap-baseline
+
+      params:
+        - name: target-url
+          value: http://tdd-frontend.tdd-frontend.svc.cluster.local
+
+      workspaces:
+        - name: source
+          workspace: source
+
 
     # --------------------------------
-    # 5. Build & Push Frontend Image
+    # 6. Build & Push Frontend Image
     # --------------------------------
     - name: build-image
       runAfter:
-        - playwright-e2e
+        - zap-baseline
         - git-sha
 
       taskRef:
