@@ -8,16 +8,24 @@ test('application loads', async ({ page }) => {
   ).toBeVisible();
 
   await expect(
-    page.getByText('Write the test first. Make it fail. Make it pass. Refactor.')
+    page.getByText('Tests before functional code. Red → Green → Refactor.')
   ).toBeVisible();
 });
 
 test('challenges load from backend', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.getByText('Build a Counter')).toBeVisible();
-  await expect(page.getByText('Health Endpoint')).toBeVisible();
-  await expect(page.getByText('Filter Challenges')).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Build a Counter' })
+  ).toBeVisible();
+
+  await expect(
+    page.getByRole('heading', { name: 'Health Endpoint' })
+  ).toBeVisible();
+
+  await expect(
+    page.getByRole('heading', { name: 'Filter Challenges' })
+  ).toBeVisible();
 });
 
 test('challenge details render', async ({ page }) => {
