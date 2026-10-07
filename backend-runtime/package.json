@@ -22,7 +22,9 @@
     "@opentelemetry/sdk-node": "^0.222.0",
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "loglayer": "^9.4.0"
+    "loglayer": "^9.4.0",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

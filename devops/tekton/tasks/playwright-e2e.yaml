@@ -1,0 +1,122 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: playwright-e2e
+  namespace: tdd-tekton-pipelines
+
+spec:
+  description: >
+    Run Playwright end-to-end tests against the frontend and backend
+    running locally inside the Tekton task container.
+
+  workspaces:
+    - name: source
+
+  steps:
+    - name: e2e
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      workingDir: $(workspaces.source.path)
+
+      script: |
+        #!/bin/bash
+        set -euo pipefail
+
+        echo "========================================"
+        echo "Installing project dependencies"
+        echo "========================================"
+
+        npm ci
+
+        echo "========================================"
+        echo "Starting backend"
+        echo "========================================"
+
+        npm run dev --workspace backend > /tmp/backend.log 2>&1 &
+        BACKEND_PID=$!
+
+        cleanup() {
+          echo "Stopping backend..."
+          kill "${BACKEND_PID}" 2>/dev/null || true
+        }
+
+        trap cleanup EXIT
+
+        echo "Backend PID: ${BACKEND_PID}"
+
+        echo "========================================"
+        echo "Waiting for backend"
+        echo "========================================"
+
+        node <<'EOF'
+        const http = require('http');
+
+        const url = 'http://127.0.0.1:4000/api/health';
+        const timeout = 120000;
+        const interval = 2000;
+        const started = Date.now();
+
+        function check() {
+          const request = http.get(url, response => {
+            if (response.statusCode >= 200 && response.statusCode < 500) {
+              console.log(`Backend is ready: HTTP ${response.statusCode}`);
+              process.exit(0);
+            }
+
+            retry();
+          });
+
+          request.on('error', retry);
+
+          request.setTimeout(3000, () => {
+            request.destroy();
+          });
+        }
+
+        function retry() {
+          if (Date.now() - started >= timeout) {
+            console.error('Backend did not become ready within 120 seconds.');
+            process.exit(1);
+          }
+
+          setTimeout(check, interval);
+        }
+
+        check();
+        EOF
+
+        echo "========================================"
+        echo "Backend is ready"
+        echo "========================================"
+
+        echo "Backend health response:"
+        node <<'EOF'
+        const http = require('http');
+
+        http.get('http://127.0.0.1:4000/api/health', response => {
+          let data = '';
+
+          response.on('data', chunk => {
+            data += chunk;
+          });
+
+          response.on('end', () => {
+            console.log(data);
+          });
+        }).on('error', error => {
+          console.error(error);
+          process.exit(1);
+        });
+        EOF
+
+        echo "========================================"
+        echo "Running Playwright E2E tests"
+        echo "========================================"
+
+        npm run test:e2e --workspace frontend
+
+        echo "========================================"
+        echo "Playwright E2E tests completed"
+        echo "========================================"
+
+        echo "Backend log:"
+        cat /tmp/backend.log

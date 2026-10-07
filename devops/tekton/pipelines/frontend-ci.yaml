@@ -106,13 +106,28 @@ spec:
         - name: source
           workspace: source
 
+    # --------------------------------
+    # 4. Playwright E2E Tests
+    # --------------------------------
+
+    - name: playwright-e2e
+      runAfter:
+        - build
+
+      taskRef:
+        name: playwright-e2e
+
+      workspaces:
+        - name: source
+          workspace: source
+
 
     # --------------------------------
-    # 4. Build & Push Frontend Image
+    # 5. Build & Push Frontend Image
     # --------------------------------
     - name: build-image
       runAfter:
-        - build
+        - playwright-e2e
         - git-sha
 
       taskRef:
