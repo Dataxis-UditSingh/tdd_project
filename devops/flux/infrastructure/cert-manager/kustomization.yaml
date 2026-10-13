@@ -7,3 +7,5 @@ resources:
   - helmrelease.yaml
   - selfsigned-issuer.yaml
   - certificate-test.yaml
+  - gateway-selfsigned-issuer.yaml
+  - gateway-certificate.yaml

@@ -1,0 +1,19 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tdd-gateway-local-tls
+  namespace: envoy-gateway-system
+spec:
+  secretName: tdd-gateway-local-tls
+  commonName: localhost
+  dnsNames:
+    - localhost
+  ipAddresses:
+    - 127.0.0.1
+  issuerRef:
+    name: gateway-selfsigned-issuer
+    kind: Issuer
+    group: cert-manager.io
+  privateKey:
+    algorithm: ECDSA
+    size: 256
