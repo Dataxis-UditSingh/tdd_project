@@ -1,0 +1,22 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cert-manager-smoke-test
+  namespace: cert-manager
+spec:
+  secretName: cert-manager-smoke-test-tls
+  commonName: cert-manager-test.local
+  subject:
+    organizations:
+      - TDD Project Local Testing
+  dnsNames:
+    - cert-manager-test.local
+  issuerRef:
+    name: local-selfsigned-issuer
+    kind: Issuer
+    group: cert-manager.io
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  duration: 2160h
+  renewBefore: 360h

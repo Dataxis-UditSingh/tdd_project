@@ -5,3 +5,5 @@ resources:
   - namespace.yaml
   - ocirepository.yaml
   - helmrelease.yaml
+  - selfsigned-issuer.yaml
+  - certificate-test.yaml
