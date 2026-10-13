@@ -7,3 +7,4 @@ resources:
   - secrets-store-csi
   - falco-operator
   - cert-manager
+  - external-secrets
