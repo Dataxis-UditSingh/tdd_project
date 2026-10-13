@@ -1,0 +1,31 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: falco-operator
+  namespace: falco-operator
+  labels:
+    app.kubernetes.io/managed-by: flux
+spec:
+  interval: 30m
+  releaseName: falco-operator
+  targetNamespace: falco-operator
+  storageNamespace: falco-operator
+
+  chart:
+    spec:
+      chart: falco-operator
+      version: "0.3.1"
+      interval: 1h
+      sourceRef:
+        kind: HelmRepository
+        name: falcosecurity
+        namespace: flux-system
+
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+
+  upgrade:
+    remediation:
+      retries: 3

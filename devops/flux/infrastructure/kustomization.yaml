@@ -5,3 +5,4 @@ resources:
   - envoy-gateway
   - images
   - secrets-store-csi
+  - falco-operator
