@@ -6,3 +6,4 @@ resources:
   - images
   - secrets-store-csi
   - falco-operator
+  - cert-manager
