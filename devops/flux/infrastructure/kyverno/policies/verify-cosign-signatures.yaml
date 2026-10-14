@@ -22,10 +22,10 @@ spec:
                 - tdd-frontend
       verifyImages:
         - imageReferences:
-            - "docker.io/uditdataxis12345/tdd-react-frontend:20261007110347-f12fb29"
+            - "docker.io/uditdataxis12345/tdd-react-frontend*"
           failureAction: Audit
-          mutateDigest: false
-          verifyDigest: false
+          mutateDigest: true
+          verifyDigest: true
           attestors:
             - count: 1
               entries:
