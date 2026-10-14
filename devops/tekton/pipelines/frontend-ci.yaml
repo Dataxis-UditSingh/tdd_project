@@ -137,10 +137,6 @@ spec:
         - name: source
           workspace: source
 
-
-    # --------------------------------
-    # 6. Build & Push Frontend Image
-    # --------------------------------
     - name: build-image
       runAfter:
         - zap-baseline
@@ -162,3 +158,20 @@ spec:
       workspaces:
         - name: source
           workspace: source
+
+    # --------------------------------
+    # 7. Sign the pushed frontend image
+    # --------------------------------
+    - name: sign-image
+      runAfter:
+        - build-image
+      taskRef:
+        name: cosign-sign-image
+      params:
+        - name: IMAGE
+          value: $(params.image):$(tasks.git-sha.results.image-tag)
+
+
+    # --------------------------------
+    # 6. Build & Push Frontend Image
+    # --------------------------------

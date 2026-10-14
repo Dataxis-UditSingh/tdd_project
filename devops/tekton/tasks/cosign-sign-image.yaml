@@ -1,0 +1,53 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: cosign-sign-image
+  namespace: tdd-tekton-pipelines
+
+spec:
+  description: Sign a pushed container image using Cosign.
+
+  params:
+    - name: IMAGE
+      type: string
+      description: Fully qualified image name including tag.
+
+  volumes:
+    - name: cosign-key
+      secret:
+        secretName: cosign-signing-key
+        items:
+          - key: cosign.key
+            path: cosign.key
+
+    - name: docker-config
+      secret:
+        secretName: dockerhub-credentials
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+
+  steps:
+    - name: sign-image
+      image: gcr.io/projectsigstore/cosign:v2.4.1
+      command:
+        - /ko-app/cosign
+      args:
+        - sign
+        - --yes
+        - --key
+        - /cosign-key/cosign.key
+        - $(params.IMAGE)
+      env:
+        - name: DOCKER_CONFIG
+          value: /root/.docker
+      envFrom:
+        - secretRef:
+            name: cosign-signing-password
+      volumeMounts:
+        - name: cosign-key
+          mountPath: /cosign-key
+          readOnly: true
+        - name: docker-config
+          mountPath: /root/.docker
+          readOnly: true
