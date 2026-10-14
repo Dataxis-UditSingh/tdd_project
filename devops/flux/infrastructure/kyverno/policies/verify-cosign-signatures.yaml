@@ -24,7 +24,7 @@ spec:
         - imageReferences:
             - "docker.io/uditdataxis12345/tdd-react-frontend:20261007110347-f12fb29"
           failureAction: Audit
-          mutateDigest: false
+          mutateDigest: false 
           attestors:
             - count: 1
               entries:
