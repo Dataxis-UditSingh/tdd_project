@@ -5,3 +5,12 @@ resources:
   - require-resources.yaml
   - require-labels.yaml
   - disallow-privileged.yaml
+  - verify-cosign-signatures.yaml
+
+secretGenerator:
+  - name: cosign-public-key
+    namespace: kyverno
+    files:
+      - cosign.pub=keys/cosign.pub
+    options:
+      disableNameSuffixHash: true
