@@ -40,7 +40,7 @@ spec:
         - $(params.IMAGE)
       env:
         - name: DOCKER_CONFIG
-          value: /root/.docker
+          value: /docker-config
       envFrom:
         - secretRef:
             name: cosign-signing-password
@@ -49,5 +49,5 @@ spec:
           mountPath: /cosign-key
           readOnly: true
         - name: docker-config
-          mountPath: /root/.docker
+          mountPath: /docker-config
           readOnly: true
