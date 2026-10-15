@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: docker.io/uditdataxis12345/tdd-react-frontend:20261015050328-b29feae # {"$imagepolicy": "flux-system:tdd-react-frontend"}
+          image: docker.io/uditdataxis12345/tdd-react-frontend:20261015060234-06acd0d # {"$imagepolicy": "flux-system:tdd-react-frontend"}
           ports:
             - containerPort: 80
           resources:
