@@ -48,7 +48,7 @@ spec:
           config:
             region: ap-hyderabad-1
             s3ForcePathStyle: "true"
-            s3Url: https://dataxis-labs-oci.compat.objectstorage.ap-hyderabad-1.oraclecloud.com
+            s3Url: https://axmpokvqajtp.compat.objectstorage.ap-hyderabad-1.oraclecloud.com
 
       volumeSnapshotLocation: []
       uploaderType: kopia
