@@ -8,3 +8,4 @@ resources:
   - falco-operator
   - cert-manager
   - external-secrets
+  - velero
