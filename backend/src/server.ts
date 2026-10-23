@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import './instrumentation.js';
 import { app } from './app.js';
 import { logger } from './logger.js';

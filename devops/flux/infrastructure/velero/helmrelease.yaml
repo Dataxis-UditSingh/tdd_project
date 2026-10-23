@@ -48,7 +48,7 @@ spec:
           config:
             region: ap-hyderabad-1
             s3ForcePathStyle: "true"
-            s3Url: https://axmpokvqajtp.compat.objectstorage.ap-hyderabad-1.oraclecloud.com
+            s3Url: https://axmpokvqajtp.compat.objectstorage.ap-hyderabad-1.oci.customer-oci.com
             checksumAlgorithm: ""
 
       volumeSnapshotLocation: []
