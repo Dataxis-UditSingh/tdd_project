@@ -8,6 +8,44 @@ spec:
   releaseName: kyverno
   targetNamespace: kyverno
 
+  values:
+    admissionController:
+      container:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 384Mi
+
+    backgroundController:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 64Mi
+        limits:
+          cpu: 300m
+          memory: 128Mi
+
+    cleanupController:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 128Mi
+
+    reportsController:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 128Mi
+
   chart:
     spec:
       chart: kyverno
