@@ -57,6 +57,9 @@ spec:
 
     injector:
       enabled: true
+      affinity: ""
+      agentImage:
+        tag: "2.6.5"
 
     csi:
       enabled: true
