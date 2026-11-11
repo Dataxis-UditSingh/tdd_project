@@ -58,6 +58,8 @@ spec:
     injector:
       enabled: true
       affinity: ""
+      strategy:
+        type: Recreate
       agentImage:
         tag: "2.6.5"
 
