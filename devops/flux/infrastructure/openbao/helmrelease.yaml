@@ -59,7 +59,10 @@ spec:
       enabled: true
       affinity: ""
       strategy:
-        type: Recreate
+        type: RollingUpdate
+        rollingUpdate:
+          maxSurge: 0
+          maxUnavailable: 1
       agentImage:
         tag: "2.6.5"
 
