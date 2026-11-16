@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-prepper-config
+  namespace: observability
+data:
+  pipelines.yaml: |
+    version: "2"
+
+    otel-telemetry:
+      source:
+        otlp:
+          port: 21893
+          ssl: false
+
+      route:
+        - logs: 'getEventType() == "LOG"'
+        - traces: 'getEventType() == "TRACE"'
+        - metrics: 'getEventType() == "METRIC"'
+
+      sink:
+        - pipeline:
+            name: otel-logs
+            routes: [logs]
+
+        - pipeline:
+            name: otel-traces
+            routes: [traces]
+
+        - pipeline:
+            name: otel-metrics
+            routes: [metrics]
+
+    otel-logs:
+      source:
+        pipeline:
+          name: otel-telemetry
+
+      sink:
+        - opensearch:
+            hosts:
+              - "https://192.168.29.225:9200"
+            username: "${OPENSEARCH_USERNAME}"
+            password: "${OPENSEARCH_PASSWORD}"
+            insecure: true
+            index: "otel-logs-%{yyyy.MM.dd}"
+
+    otel-traces:
+      source:
+        pipeline:
+          name: otel-telemetry
+
+      processor:
+        - otel_traces:
+
+      sink:
+        - opensearch:
+            hosts:
+              - "https://192.168.29.225:9200"
+            username: "${OPENSEARCH_USERNAME}"
+            password: "${OPENSEARCH_PASSWORD}"
+            insecure: true
+            index_type: trace-analytics-raw
+
+    otel-metrics:
+      source:
+        pipeline:
+          name: otel-telemetry
+
+      processor:
+        - otel_metrics:
+            calculate_histogram_buckets: true
+            calculate_exponential_histogram_buckets: true
+            exponential_histogram_max_allowed_scale: 10
+            flatten_attributes: false
+
+      sink:
+        - opensearch:
+            hosts:
+              - "https://192.168.29.225:9200"
+            username: "${OPENSEARCH_USERNAME}"
+            password: "${OPENSEARCH_PASSWORD}"
+            insecure: true
+            index: "otel-metrics-%{yyyy.MM.dd}"

@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-prepper
+  namespace: observability
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: data-prepper
+
+  template:
+    metadata:
+      labels:
+        app: data-prepper
+
+    spec:
+      serviceAccountName: data-prepper
+
+      containers:
+        - name: data-prepper
+          image: opensearchproject/data-prepper:2.16.0
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: otlp
+              containerPort: 21893
+              protocol: TCP
+
+          env:
+            - name: OPENSEARCH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: data-prepper-secrets
+                  key: OPENSEARCH_USERNAME
+
+            - name: OPENSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: data-prepper-secrets
+                  key: OPENSEARCH_PASSWORD
+
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2
+              memory: 2Gi
+
+          volumeMounts:
+            - name: pipelines
+              mountPath: /usr/share/data-prepper/pipelines
+              readOnly: true
+
+            - name: openbao-secrets
+              mountPath: /mnt/secrets-store
+              readOnly: true
+
+      volumes:
+        - name: pipelines
+          configMap:
+            name: data-prepper-config
+
+        - name: openbao-secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: data-prepper-openbao

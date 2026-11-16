@@ -10,3 +10,4 @@ resources:
   - external-secrets
   - velero
   - otel-collector
+  - data-prepper

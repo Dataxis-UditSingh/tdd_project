@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-prepper
+  namespace: observability
+spec:
+  type: ClusterIP
+  selector:
+    app: data-prepper
+  ports:
+    - name: otlp
+      port: 21893
+      targetPort: 21893
+      protocol: TCP
