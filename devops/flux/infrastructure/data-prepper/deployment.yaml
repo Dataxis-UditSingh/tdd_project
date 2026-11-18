@@ -41,13 +41,16 @@ spec:
                   name: data-prepper-secrets
                   key: OPENSEARCH_PASSWORD
 
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:ActiveProcessorCount=2 -Xss512k"
+
           resources:
             requests:
               cpu: 500m
               memory: 1Gi
             limits:
               cpu: 2
-              memory: 2Gi
+              memory: 3Gi
 
           volumeMounts:
             - name: pipelines
