@@ -12,3 +12,4 @@ resources:
   - otel-collector
   - data-prepper
   - opensearch
+  - opensearch-dashboards
