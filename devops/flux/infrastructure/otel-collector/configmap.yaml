@@ -22,6 +22,11 @@ data:
       debug:
         verbosity: detailed
 
+      otlp:
+        endpoint: data-prepper.observability.svc.cluster.local:21893
+        tls:
+          insecure: true
+
     service:
       extensions:
         - health_check
@@ -33,6 +38,7 @@ data:
           processors:
             - batch
           exporters:
+            - otlp
             - debug
 
         traces:
@@ -41,6 +47,7 @@ data:
           processors:
             - batch
           exporters:
+            - otlp
             - debug
 
         metrics:
@@ -49,4 +56,5 @@ data:
           processors:
             - batch
           exporters:
+            - otlp
             - debug
