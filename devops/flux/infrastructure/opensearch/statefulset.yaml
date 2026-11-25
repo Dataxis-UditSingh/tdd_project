@@ -31,6 +31,10 @@ spec:
               value: "-Xms512m -Xmx512m"
             - name: bootstrap.memory_lock
               value: "false"
+	    - name: DISABLE_SECURITY_PLUGIN
+              value: "true"
+            - name: DISABLE_INSTALL_DEMO_CONFIG
+              value: "true"
           resources:
             requests:
               cpu: 250m
