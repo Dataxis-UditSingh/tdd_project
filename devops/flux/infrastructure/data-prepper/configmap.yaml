@@ -39,10 +39,7 @@ data:
       sink:
         - opensearch:
             hosts:
-              - "https://192.168.29.225:9200"
-            username: "${OPENSEARCH_USERNAME}"
-            password: "${OPENSEARCH_PASSWORD}"
-            insecure: true
+              - "http://opensearch.observability.svc.cluster.local:9200"
             index: "otel-logs-%{yyyy.MM.dd}"
 
     otel-traces:
@@ -56,10 +53,7 @@ data:
       sink:
         - opensearch:
             hosts:
-              - "https://192.168.29.225:9200"
-            username: "${OPENSEARCH_USERNAME}"
-            password: "${OPENSEARCH_PASSWORD}"
-            insecure: true
+              - "http://opensearch.observability.svc.cluster.local:9200"
             index_type: trace-analytics-raw
 
     otel-metrics:
@@ -77,8 +71,5 @@ data:
       sink:
         - opensearch:
             hosts:
-              - "https://192.168.29.225:9200"
-            username: "${OPENSEARCH_USERNAME}"
-            password: "${OPENSEARCH_PASSWORD}"
-            insecure: true
+              - "http://opensearch.observability.svc.cluster.local:9200"
             index: "otel-metrics-%{yyyy.MM.dd}"
