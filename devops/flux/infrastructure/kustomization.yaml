@@ -11,3 +11,4 @@ resources:
   - velero
   - otel-collector
   - data-prepper
+  - opensearch
