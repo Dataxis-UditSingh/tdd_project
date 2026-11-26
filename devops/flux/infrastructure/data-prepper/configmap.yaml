@@ -47,9 +47,6 @@ data:
         pipeline:
           name: otel-telemetry
 
-      processor:
-        - otel_traces:
-
       sink:
         - opensearch:
             hosts:
