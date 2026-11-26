@@ -1,11 +1,20 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DevOpsAgent } from './devops.agent.js';
+async function createOllamaDevOpsAgent() {
+  vi.resetModules();
+  vi.stubEnv('AGENT_ROUTER_PROVIDER', 'ollama');
+
+  const { DevOpsAgent } = await import('./devops.agent.js');
+  return new DevOpsAgent();
+}
 
 describe('DevOpsAgent', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
-  });
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+  vi.resetModules();
+});
 
   it('returns generated DevOps guidance', async () => {
     vi.stubGlobal(
@@ -20,7 +29,7 @@ describe('DevOpsAgent', () => {
       }),
     );
 
-    const agent = new DevOpsAgent();
+    const agent = await createOllamaDevOpsAgent();
 
     const result = await agent.execute({
       agentId: 'devops',
@@ -40,10 +49,12 @@ describe('DevOpsAgent', () => {
       vi.fn().mockResolvedValue({
         ok: false,
         status: 500,
+        statusText: 'Internal Server Error',
+        text: async () => 'Internal Server Error',
       }),
     );
 
-    const agent = new DevOpsAgent();
+    const agent = await createOllamaDevOpsAgent();
 
     await expect(
       agent.execute({
@@ -66,7 +77,7 @@ describe('DevOpsAgent', () => {
       }),
     );
 
-    const agent = new DevOpsAgent();
+    const agent = await createOllamaDevOpsAgent();
 
     await expect(
       agent.execute({
@@ -92,7 +103,8 @@ describe('DevOpsAgent', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await new DevOpsAgent().execute({
+    const agent = await createOllamaDevOpsAgent();
+    const result = await agent.execute({
       agentId: 'devops',
       message: 'Generate a Kubernetes Service YAML.',
     });
@@ -128,7 +140,8 @@ describe('DevOpsAgent', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await new DevOpsAgent().execute({
+    const agent = await createOllamaDevOpsAgent();
+    const result = await agent.execute({
       agentId: 'devops',
       message: 'Generate YAML.',
     });
@@ -152,8 +165,9 @@ describe('DevOpsAgent', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
+    const agent = await createOllamaDevOpsAgent();
     await expect(
-      new DevOpsAgent().execute({
+      agent.execute({
         agentId: 'devops',
         message: 'Generate YAML.',
       }),
@@ -178,16 +192,19 @@ describe('DevOpsAgent', () => {
       .mockResolvedValueOnce({
         ok: false,
         status: 500,
+        statusText: 'Internal Server Error',
+        text: async () => 'Internal Server Error',
       });
 
     vi.stubGlobal('fetch', fetchMock);
 
+    const agent = await createOllamaDevOpsAgent();
     await expect(
-      new DevOpsAgent().execute({
+      agent.execute({
         agentId: 'devops',
         message: 'Generate YAML.',
       }),
-    ).rejects.toThrow('Ollama correction returned HTTP 500');
+    ).rejects.toThrow('Ollama returned HTTP 500');
   });
 
 });

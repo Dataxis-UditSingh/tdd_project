@@ -3,18 +3,18 @@ import { describe, expect, it } from 'vitest';
 import { app } from '../app.js';
 
 describe('AI Agent Router foundation', () => {
-  it('reports placeholder agents and configuration', async () => {
+  it('reports agent capabilities and configuration', async () => {
     const response = await request(app).get('/api/agent-router/status');
 
     expect(response.status).toBe(200);
-    expect(response.body.mode).toBe('placeholder');
-    expect(response.body.agents.map((agent: { id: string }) => agent.id)).toEqual([
-      'coding',
-      'testing',
-      'devops',
-      'documentation',
-      'general',
-    ]);
+    expect(response.body.mode).toBe('mixed');
+    expect(response.body.agents).toHaveLength(5);
+
+    expect(
+      response.body.agents
+        .filter((agent: { status: string }) => agent.status === 'implemented')
+        .map((agent: { id: string }) => agent.id),
+    ).toEqual(['coding', 'testing', 'devops', 'documentation']);
   });
 
   it('routes a coding request without executing an agent', async () => {
@@ -104,4 +104,36 @@ describe('AI Agent Router foundation', () => {
     expect(response.status).toBe(400);
     expect(response.body.error).toBe('MESSAGE_TOO_LONG');
   });
+
+
+it('rejects an empty message on the execute endpoint', async () => {
+  const response = await request(app)
+    .post('/api/agent-router/execute')
+    .send({ message: '   ' });
+
+  expect(response.status).toBe(400);
+  expect(response.body.error).toBe('INVALID_REQUEST');
+});
+
+it('rejects a non-string preferred agent on the execute endpoint', async () => {
+  const response = await request(app)
+    .post('/api/agent-router/execute')
+    .send({
+      message: 'Generate unit tests',
+      preferredAgent: 123,
+    });
+
+  expect(response.status).toBe(400);
+  expect(response.body.error).toBe('UNKNOWN_AGENT');
+});
+
+it('rejects excessively long messages on the execute endpoint', async () => {
+  const response = await request(app)
+    .post('/api/agent-router/execute')
+    .send({ message: 'x'.repeat(10_001) });
+
+  expect(response.status).toBe(400);
+  expect(response.body.error).toBe('MESSAGE_TOO_LONG');
+});
+
 });

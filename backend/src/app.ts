@@ -4,7 +4,6 @@ import { challenges } from './data.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { agentRouterRoutes } from './routes/agent-router.routes.js';
 
-
 export const app = express();
 
 app.use(cors());

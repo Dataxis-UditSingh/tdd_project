@@ -12,7 +12,7 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:4000',
       '/v1': {
-        target: 'http://192.168.29.225:4318',
+        target: 'http://localhost:4318',
         changeOrigin: true,
       },
     },

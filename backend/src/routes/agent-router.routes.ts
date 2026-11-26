@@ -1,35 +1,48 @@
+
 import { Router } from 'express';
 import { agentRouterConfig } from '../agent-router/config.js';
 import { getAgent, listAgents } from '../agent-router/registry.js';
 import { AGENT_IDS } from '../agent-router/types.js';
-import { routeAndExecute, routeRequest} from '../agent-router/router.service.js';
+import {
+  routeAndExecute,
+  routeRequest,
+} from '../agent-router/router.service.js';
 
 export const agentRouterRoutes = Router();
 
-agentRouterRoutes.get('/status', (_req, res) => {
-  res.json({
-    enabled: agentRouterConfig.enabled,
-    provider: agentRouterConfig.provider,
-    mode: 'placeholder',
-    agents: listAgents(),
-  });
-});
+const MAX_MESSAGE_LENGTH = 10_000;
 
-agentRouterRoutes.post('/route', async (req, res) => {
-  const { message, preferredAgent } = req.body ?? {};
-
-  if (typeof message !== 'string' || message.trim().length === 0) {
-    return res.status(400).json({
+function validateRequest(body: unknown):
+  | { valid: true; message: string; preferredAgent?: (typeof AGENT_IDS)[number] }
+  | { valid: false; status: number; error: string; message: string } {
+  if (!body || typeof body !== 'object') {
+    return {
+      valid: false,
+      status: 400,
       error: 'INVALID_REQUEST',
-      message: 'The message field must be a non-empty string.',
-    });
+      message: 'A JSON request body is required.',
+    };
   }
 
-  if (message.length > 10_000) {
-    return res.status(400).json({
+  const input = body as Record<string, unknown>;
+  const { message, preferredAgent } = input;
+
+  if (typeof message !== 'string' || message.trim().length === 0) {
+    return {
+      valid: false,
+      status: 400,
+      error: 'INVALID_REQUEST',
+      message: 'The message field must be a non-empty string.',
+    };
+  }
+
+  if (message.length > MAX_MESSAGE_LENGTH) {
+    return {
+      valid: false,
+      status: 400,
       error: 'MESSAGE_TOO_LONG',
-      message: 'The message must be 10000 characters or fewer.',
-    });
+      message: `The message must be ${MAX_MESSAGE_LENGTH} characters or fewer.`,
+    };
   }
 
   if (
@@ -37,17 +50,60 @@ agentRouterRoutes.post('/route', async (req, res) => {
     (typeof preferredAgent !== 'string' ||
       !AGENT_IDS.includes(preferredAgent as (typeof AGENT_IDS)[number]))
   ) {
-    return res.status(400).json({
+    return {
+      valid: false,
+      status: 400,
       error: 'UNKNOWN_AGENT',
       message: 'preferredAgent must be a supported agent ID.',
-      supportedAgents: AGENT_IDS,
-    });
+    };
   }
 
-  if (preferredAgent && !getAgent(preferredAgent)) {
-    return res.status(400).json({
+  if (typeof preferredAgent === 'string' && !getAgent(preferredAgent as (typeof AGENT_IDS)[number])) {
+    return {
+      valid: false,
+      status: 400,
       error: 'UNKNOWN_AGENT',
       message: 'The requested agent is not registered.',
+    };
+  }
+
+  return {
+    valid: true,
+    message: message.trim(),
+    ...(preferredAgent !== undefined
+      ? { preferredAgent: preferredAgent as (typeof AGENT_IDS)[number] }
+      : {}),
+  };
+}
+
+agentRouterRoutes.get('/status', (_req, res) => {
+  const agents = listAgents();
+  const implementedCount = agents.filter(
+    (agent) => agent.status === 'implemented',
+  ).length;
+
+  const mode =
+    implementedCount === 0
+      ? 'placeholder'
+      : implementedCount === agents.length
+        ? 'active'
+        : 'mixed';
+
+  res.json({
+    enabled: agentRouterConfig.enabled,
+    provider: agentRouterConfig.provider,
+    mode,
+    agents,
+  });
+});
+
+agentRouterRoutes.post('/route', async (req, res) => {
+  const validated = validateRequest(req.body);
+
+  if (!validated.valid) {
+    return res.status(validated.status).json({
+      error: validated.error,
+      message: validated.message,
     });
   }
 
@@ -58,62 +114,51 @@ agentRouterRoutes.post('/route', async (req, res) => {
     });
   }
 
-  const decision = await routeRequest({
-    message: message.trim(),
-    ...(preferredAgent ? { preferredAgent } : {}),
-  });
-
-  return res.status(200).json(decision);
-});
-
-
-agentRouterRoutes.post('/execute', async (req, res) => {
   try {
-    const { message, preferredAgent } = req.body ?? {};
-
-    if (
-      typeof message !== 'string' ||
-      message.trim().length === 0 ||
-      message.length > 4000
-    ) {
-      res.status(400).json({
-        error: 'INVALID_MESSAGE',
-      });
-      return;
-    }
-
-    if (preferredAgent !== undefined) {
-      const agent = getAgent(preferredAgent);
-
-      if (!agent) {
-        res.status(400).json({
-          error: 'UNKNOWN_AGENT',
-        });
-        return;
-      }
-    }
-
-    const result = await routeAndExecute({
-      message,
-      preferredAgent,
+    const decision = await routeRequest({
+      message: validated.message,
+      ...(validated.preferredAgent
+        ? { preferredAgent: validated.preferredAgent }
+        : {}),
     });
 
-    res.status(200).json(result);
-  } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message === 'AGENT_ROUTER_DISABLED'
-    ) {
-      res.status(503).json({
-        error: 'AGENT_ROUTER_DISABLED',
-      });
-      return;
-    }
-
-    res.status(500).json({
-      error: 'AGENT_EXECUTION_REQUEST_FAILED',
+    return res.status(200).json(decision);
+  } catch {
+    return res.status(500).json({
+      error: 'AGENT_ROUTING_REQUEST_FAILED',
     });
   }
 });
 
+agentRouterRoutes.post('/execute', async (req, res) => {
+  const validated = validateRequest(req.body);
 
+  if (!validated.valid) {
+    return res.status(validated.status).json({
+      error: validated.error,
+      message: validated.message,
+    });
+  }
+
+  if (!agentRouterConfig.enabled) {
+    return res.status(503).json({
+      error: 'AGENT_ROUTER_DISABLED',
+      message: 'The agent router is disabled by configuration.',
+    });
+  }
+
+  try {
+    const result = await routeAndExecute({
+      message: validated.message,
+      ...(validated.preferredAgent
+        ? { preferredAgent: validated.preferredAgent }
+        : {}),
+    });
+
+    return res.status(200).json(result);
+  } catch {
+    return res.status(500).json({
+      error: 'AGENT_EXECUTION_REQUEST_FAILED',
+    });
+  }
+});

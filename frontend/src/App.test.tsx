@@ -1,6 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import App from './App';
+
 
 describe('TDD Challenge Lab', () => {
   beforeEach(() => {
@@ -66,5 +67,67 @@ describe('TDD Challenge Lab', () => {
     expect(
       await screen.findByText('Build a Counter'),
     ).toBeInTheDocument();
+  });
+
+  it('submits a prompt and displays the selected agent response', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [],
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            routing: {
+              requestedAgent: 'testing',
+              status: 'ready',
+              message: 'Testing Agent is ready.',
+              reason: 'Agent selected explicitly by the request.',
+            },
+            execution: {
+              agentId: 'testing',
+              status: 'success',
+              output: 'describe("Button", () => { it("renders", () => {}); });',
+            },
+          }),
+        }),
+    );
+
+    render(<App />);
+
+    await screen.findByText(/0 challenges/i);
+
+    fireEvent.change(screen.getByLabelText(/what do you want the agent to do/i), {
+      target: { value: 'Write a test for a Button component' },
+    });
+
+    fireEvent.change(screen.getByLabelText(/^agent$/i), {
+      target: { value: 'testing' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /generate response/i }));
+
+    expect(await screen.findByRole('heading', { name: /testing agent/i }))
+      .toBeInTheDocument();
+
+    expect(
+      screen.getByText(/describe\("button"/i),
+    ).toBeInTheDocument();
+
+    const fetchMock = vi.mocked(fetch);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      expect.stringContaining('/api/agent-router/execute'),
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          message: 'Write a test for a Button component',
+          preferredAgent: 'testing',
+        }),
+      }),
+    );
   });
 });

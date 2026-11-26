@@ -1,6 +1,9 @@
+
 import { trace } from '@opentelemetry/api';
 import { ConsoleTransport, LogLayer } from 'loglayer';
 import { HttpTransport } from '@loglayer/transport-http';
+
+const serviceName = process.env.OTEL_SERVICE_NAME ?? 'tdd-backend';
 
 const logEndpoint =
   process.env.OTEL_LOGS_ENDPOINT ??
@@ -13,42 +16,43 @@ const consoleTransport = new ConsoleTransport({
 
 const httpTransport = new HttpTransport({
   url: logEndpoint,
-
   method: 'POST',
-
   contentType: 'application/json',
   batchContentType: 'application/json',
-
   headers: {
     Accept: 'application/json',
   },
-
   enableBatchSend: false,
 
   payloadTemplate: ({ logLevel, message, data }) => {
-    const activeSpan = trace.getActiveSpan();
-    const spanContext = activeSpan?.spanContext();
-
-    const now = String(Date.now() * 1_000_000);
+    const spanContext = trace.getActiveSpan()?.spanContext();
 
     const attributes = [
       {
         key: 'service.name',
-        value: {
-          stringValue: 'tdd-backend',
-        },
+        value: { stringValue: serviceName },
       },
+      ...Object.entries(data ?? {})
+        .filter(([, value]) => value !== undefined && value !== null)
+        .map(([key, value]) => ({
+          key,
+          value: { stringValue: String(value) },
+        })),
     ];
 
-    if (data) {
-      attributes.push(
-        ...Object.entries(data).map(([key, value]) => ({
-          key,
-          value: {
-            stringValue: String(value),
-          },
-        })),
-      );
+    const now = (BigInt(Date.now()) * 1_000_000n).toString();
+
+    const logRecord: Record<string, unknown> = {
+      timeUnixNano: now,
+      observedTimeUnixNano: now,
+      severityText: logLevel.toUpperCase(),
+      body: { stringValue: message },
+      attributes,
+    };
+
+    if (spanContext) {
+      logRecord.traceId = spanContext.traceId;
+      logRecord.spanId = spanContext.spanId;
     }
 
     return JSON.stringify({
@@ -58,32 +62,13 @@ const httpTransport = new HttpTransport({
             attributes: [
               {
                 key: 'service.name',
-                value: {
-                  stringValue: 'tdd-backend',
-                },
+                value: { stringValue: serviceName },
               },
             ],
           },
-
           scopeLogs: [
             {
-              logRecords: [
-                {
-                  timeUnixNano: now,
-                  observedTimeUnixNano: now,
-
-                  severityText: logLevel.toUpperCase(),
-
-                  body: {
-                    stringValue: message,
-                  },
-
-                  traceId: spanContext?.traceId ?? '',
-                  spanId: spanContext?.spanId ?? '',
-
-                  attributes,
-                },
-              ],
+              logRecords: [logRecord],
             },
           ],
         },
@@ -100,24 +85,22 @@ const httpTransport = new HttpTransport({
   },
 
   onDebugReqRes: ({ req, res }) => {
-    console.log('[HTTP REQUEST]', {
-      url: req.url,
-      method: req.method,
-      headers: req.headers,
-      body: req.body,
-    });
-
-    console.log('[HTTP RESPONSE]', {
-      status: res.status,
-      statusText: res.statusText,
-      headers: res.headers,
-      body: res.body,
-    });
+    console.log('\n========== OTLP LOG DELIVERY ==========');
+    console.log('Endpoint:', req.url);
+    console.log('HTTP Status:', res.status);
+    console.log('Status Text:', res.statusText);
+    console.log('Response Body:', res.body);
+    console.log('=======================================\n');
   },
 
   onError: (error) => {
     console.error('[HTTP TRANSPORT ERROR]', error);
   },
+});
+
+console.log('[OTEL CONFIG]', {
+  serviceName,
+  logEndpoint,
 });
 
 export const logger = new LogLayer({

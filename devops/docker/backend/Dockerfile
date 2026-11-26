@@ -29,6 +29,6 @@ RUN npm ci --omit=dev --workspace backend --include-workspace-root=false
 
 COPY --from=builder /app/backend/dist ./backend/dist
 
-EXPOSE 3000
+EXPOSE 4000
 
 CMD ["node", "backend/dist/server.js"]

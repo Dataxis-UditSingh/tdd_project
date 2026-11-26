@@ -1,0 +1,50 @@
+apiVersion: v1
+data:
+  config.yaml: |
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+
+    receivers:
+      otlp:
+        protocols:
+          http:
+            endpoint: 0.0.0.0:4318
+
+    processors:
+      batch:
+
+    exporters:
+      debug:
+        verbosity: detailed
+
+    service:
+      extensions:
+        - health_check
+
+      pipelines:
+        logs:
+          receivers:
+            - otlp
+          processors:
+            - batch
+          exporters:
+            - debug
+
+        traces:
+          receivers:
+            - otlp
+          processors:
+            - batch
+          exporters:
+            - debug
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"config.yaml":"extensions:\n  health_check:\n    endpoint: 0.0.0.0:13133\n\nreceivers:\n  otlp:\n    protocols:\n      http:\n        endpoint: 0.0.0.0:4318\n\nprocessors:\n  batch:\n\nexporters:\n  debug:\n    verbosity: detailed\n\nservice:\n  extensions:\n    - health_check\n\n  pipelines:\n    logs:\n      receivers:\n        - otlp\n      processors:\n        - batch\n      exporters:\n        - debug\n\n    traces:\n      receivers:\n        - otlp\n      processors:\n        - batch\n      exporters:\n        - debug\n"},"kind":"ConfigMap","metadata":{"annotations":{},"name":"otel-collector-config","namespace":"observability"}}
+  creationTimestamp: "2026-09-03T12:22:31Z"
+  name: otel-collector-config
+  namespace: observability
+  resourceVersion: "631103"
+  uid: 0eeb6f4e-1f13-4dd1-bb5b-c080af905457

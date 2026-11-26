@@ -18,8 +18,21 @@ spec:
         - name: backend
           image: docker.io/uditdataxis12345/tdd-react-backend:20261126114741-34d6449 # {"$imagepolicy": "flux-system:tdd-react-backend"}
           ports:
-            - containerPort: 3000
+            - containerPort: 4000
+
           env:
+            - name: OTEL_SERVICE_NAME
+              value: tdd-backend
+
+            - name: OTEL_TRACES_ENDPOINT
+              value: http://otel-collector.observability.svc.cluster.local:4318/v1/traces
+
+            - name: OTEL_NODE_EXPERIMENTAL_SDK_METRICS
+              value: "true"
+
+            - name: PORT
+              value: "4000"
+
             - name: OTEL_LOGS_ENDPOINT
               valueFrom:
                 secretKeyRef:

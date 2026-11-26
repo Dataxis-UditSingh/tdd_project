@@ -1,6 +1,6 @@
 import { agentRouterConfig } from './config.js';
 import { getAgent } from './registry.js';
-import { classifyWithOllama } from './ollama.classifier.js';
+import { classifyWithLLM } from './llm.classifier.js';
 import type { AgentId, RouteDecision, RouteRequest } from './types.js';
 import { AgentExecutionService } from './execution/agent-execution.service.js';
 import type { AgentResult } from './types.js';
@@ -56,19 +56,18 @@ export async function routeRequest(
   if (input.preferredAgent) {
     selectedId = input.preferredAgent;
     reason = 'Agent selected explicitly by the request.';
-  } else if (agentRouterConfig.provider === 'ollama') {
+  } else if (agentRouterConfig.provider === 'ollama' || agentRouterConfig.provider === 'agentgateway') {
     try {
-      selectedId = await classifyWithOllama(input.message);
-      reason = 'Agent selected using the Ollama classifier.';
+      selectedId = await classifyWithLLM(input.message);
+      reason = `Agent selected using the ${agentRouterConfig.provider} classifier.`;
     } catch (error) {
       console.error(
-        'Ollama classification failed; using keyword fallback.',
+        'LLM classification failed; using keyword fallback.',
         error instanceof Error ? error.message : 'Unknown error',
       );
 
       selectedId = classifyMessage(input.message);
-      reason =
-        'Ollama classification failed; used the keyword-based fallback.';
+      reason = 'LLM classification failed; used the keyword-based fallback.';
     }
   } else {
     selectedId = classifyMessage(input.message);

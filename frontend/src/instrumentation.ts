@@ -47,11 +47,12 @@ registerInstrumentations({
   instrumentations: [
     new FetchInstrumentation({
       ignoreUrls: [
-        /\/v1\/logs$/,
-        /\/v1\/traces$/,
+        /\/v1\/logs(?:\?.*)?$/,
+        /\/v1\/traces(?:\?.*)?$/,
+        /\/v1\/metrics(?:\?.*)?$/,
       ],
       propagateTraceHeaderCorsUrls: [
-        /localhost:4000/,
+        /\/api(?:\/|$)/,
       ],
       applyCustomAttributesOnSpan: (span) => {
         span.setAttribute('client.id', clientId);

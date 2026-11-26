@@ -1,9 +1,19 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CodingAgent } from './coding.agent.js';
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 
 describe('CodingAgent', () => {
+  async function createOllamaCodingAgent() {
+    vi.resetModules();
+    vi.stubEnv('AGENT_ROUTER_PROVIDER', 'ollama');
+
+    const { CodingAgent } = await import('./coding.agent.js');
+    return new CodingAgent();
+  }
+
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.unstubAllGlobals();
+    vi.useRealTimers();
+    vi.resetModules();
   });
 
   it('returns a generated coding response', async () => {
@@ -19,7 +29,7 @@ describe('CodingAgent', () => {
       }),
     );
 
-    const agent = new CodingAgent();
+    const agent = await createOllamaCodingAgent();
 
     const result = await agent.execute({
       agentId: 'coding',
@@ -39,10 +49,12 @@ describe('CodingAgent', () => {
       vi.fn().mockResolvedValue({
         ok: false,
         status: 500,
+        statusText: 'Internal Server Error',
+        text: async () => 'Internal Server Error',
       }),
     );
 
-    const agent = new CodingAgent();
+    const agent = await createOllamaCodingAgent();
 
     await expect(
       agent.execute({
@@ -65,7 +77,7 @@ describe('CodingAgent', () => {
       }),
     );
 
-    const agent = new CodingAgent();
+    const agent = await createOllamaCodingAgent();
 
     await expect(
       agent.execute({
@@ -81,7 +93,7 @@ describe('CodingAgent', () => {
       vi.fn().mockRejectedValue(new Error('Network unavailable')),
     );
 
-    const agent = new CodingAgent();
+    const agent = await createOllamaCodingAgent();
 
     await expect(
       agent.execute({
@@ -97,10 +109,12 @@ describe('CodingAgent', () => {
       vi.fn().mockResolvedValue({
         ok: false,
         status: 503,
+        statusText: 'Service Unavailable',
+        text: async () => 'Service Unavailable',
       }),
     );
 
-    const agent = new CodingAgent();
+    const agent = await createOllamaCodingAgent();
 
     await expect(
       agent.execute({
@@ -110,49 +124,47 @@ describe('CodingAgent', () => {
     ).rejects.toThrow('Ollama returned HTTP 503');
   });
 
-  
-it('aborts the Ollama request when the timeout expires', async () => {
-  vi.useFakeTimers();
+  it('aborts the Ollama request when the timeout expires', async () => {
+    vi.useFakeTimers();
 
-  try {
-    const fetchMock = vi.fn(
-      (_url: string, options?: RequestInit) =>
-        new Promise<Response>((_resolve, reject) => {
-          options?.signal?.addEventListener(
-            'abort',
-            () => {
-              reject(
-                new DOMException(
-                  'The operation was aborted',
-                  'AbortError',
-                ),
-              );
-            },
-            { once: true },
-          );
-        }),
-    );
+    try {
+      const fetchMock = vi.fn(
+        (_url: string, options?: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            options?.signal?.addEventListener(
+              'abort',
+              () => {
+                reject(
+                  new DOMException(
+                    'The operation was aborted',
+                    'AbortError',
+                  ),
+                );
+              },
+              { once: true },
+            );
+          }),
+      );
 
-    vi.stubGlobal('fetch', fetchMock);
+      vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new CodingAgent();
+      const agent = await createOllamaCodingAgent();
 
-    // Attach rejection handling immediately to prevent an
-    // unhandled rejection when the abort signal fires.
-    const execution = agent.execute({
-      agentId: 'coding',
-      message: 'Write a TypeScript function.',
-    });
+      // Attach rejection handling immediately to prevent an
+      // unhandled rejection when the abort signal fires.
+      const execution = agent.execute({
+        agentId: 'coding',
+        message: 'Write a TypeScript function.',
+      });
 
-    const assertion = expect(execution).rejects.toThrow();
+      const assertion = expect(execution).rejects.toThrow();
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
 
-    await vi.runOnlyPendingTimersAsync();
-    await assertion;
-  } finally {
-    vi.useRealTimers();
-  }
-});
-
+      await vi.runOnlyPendingTimersAsync();
+      await assertion;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

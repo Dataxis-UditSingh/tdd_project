@@ -1,0 +1,29 @@
+# Git and OS files
+.git
+.DS_Store
+
+# Dependencies and build output
+node_modules
+**/node_modules
+**/dist
+**/coverage
+
+# Environment and secrets
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Local backups and runtime artifacts
+backups/
+backend-runtime/
+backend-runtime-staged/
+k8s/
+release/
+
+# Local recovery backups
+openbao-config-before-recovery.yaml
+otel-collector-config-backup.yaml
+
+# Logs
+*.log

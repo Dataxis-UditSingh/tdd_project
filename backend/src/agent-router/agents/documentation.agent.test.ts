@@ -2,10 +2,21 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DocumentationAgent } from './documentation.agent.js';
 
+async function createOllamaDocumentationAgent() {
+  vi.resetModules();
+  vi.stubEnv('AGENT_ROUTER_PROVIDER', 'ollama');
+
+  const { DocumentationAgent } = await import('./documentation.agent.js');
+  return new DocumentationAgent();
+}
+
 describe('DocumentationAgent', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
-  });
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+  vi.resetModules();
+});
 
   it('returns generated technical documentation', async () => {
     vi.stubGlobal(
@@ -20,7 +31,7 @@ describe('DocumentationAgent', () => {
       }),
     );
 
-    const agent = new DocumentationAgent();
+    const agent = await createOllamaDocumentationAgent();
 
     const result = await agent.execute({
       agentId: 'documentation',
@@ -40,10 +51,12 @@ describe('DocumentationAgent', () => {
       vi.fn().mockResolvedValue({
         ok: false,
         status: 500,
+        statusText: 'Internal Server Error',
+        text: async () => 'Internal Server Error',
       }),
     );
 
-    const agent = new DocumentationAgent();
+    const agent = await createOllamaDocumentationAgent();
 
     await expect(
       agent.execute({
@@ -66,7 +79,7 @@ describe('DocumentationAgent', () => {
       }),
     );
 
-    const agent = new DocumentationAgent();
+    const agent = await createOllamaDocumentationAgent();
 
     await expect(
       agent.execute({
@@ -82,7 +95,7 @@ describe('DocumentationAgent', () => {
       vi.fn().mockRejectedValue(new Error('Network unavailable')),
     );
 
-    const agent = new DocumentationAgent();
+    const agent = await createOllamaDocumentationAgent();
 
     await expect(
       agent.execute({
@@ -98,10 +111,12 @@ describe('DocumentationAgent', () => {
       vi.fn().mockResolvedValue({
         ok: false,
         status: 503,
+        statusText: 'Service Unavailable',
+        text: async () => 'Service Unavailable',
       }),
     );
 
-    const agent = new DocumentationAgent();
+    const agent = await createOllamaDocumentationAgent();
 
     await expect(
       agent.execute({

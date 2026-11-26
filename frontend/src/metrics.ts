@@ -1,3 +1,4 @@
+import { getClientId } from './client-id';
 import { metrics } from '@opentelemetry/api';
 import {
   MeterProvider,
@@ -12,9 +13,12 @@ import {
 const metricsEndpoint =
   import.meta.env.VITE_OTEL_METRICS_ENDPOINT ?? '/v1/metrics';
 
+const clientId = getClientId();
+
 const resource = defaultResource().merge(
   resourceFromAttributes({
     'service.name': 'tdd-frontend',
+    'client.id': clientId,
   }),
 );
 

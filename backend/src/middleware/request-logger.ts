@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { logger } from '../logger.js';
+import { recordHttpRequest } from '../metrics.js';
 
 export function requestLogger(
   req: Request,
@@ -15,21 +16,29 @@ export function requestLogger(
   res.on('finish', () => {
     const durationMs = Date.now() - startedAt;
 
+    const routePath =
+      typeof req.route?.path === 'string'
+        ? `${req.baseUrl}${req.route.path}`
+        : req.path;
+
+    recordHttpRequest(
+      req.method,
+      routePath,
+      res.statusCode,
+      durationMs,
+    );
+
     const logMessage =
       `HTTP request completed: ${req.method} ${req.originalUrl} ` +
       `status=${res.statusCode} durationMs=${durationMs}`;
 
     if (res.statusCode >= 500) {
       logger.error(logMessage);
-      return;
-    }
-
-    if (res.statusCode >= 400) {
+    } else if (res.statusCode >= 400) {
       logger.warn(logMessage);
-      return;
+    } else {
+      logger.info(logMessage);
     }
-
-    logger.info(logMessage);
   });
 
   next();
