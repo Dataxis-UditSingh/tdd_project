@@ -54,7 +54,7 @@ data:
         - opensearch:
             hosts:
               - "http://opensearch.observability.svc.cluster.local:9200"
-            index_type: trace-analytics-raw
+            index: "otel-traces-%{yyyy.MM.dd}"
 
     otel-metrics:
       source:
