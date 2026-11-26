@@ -3,42 +3,33 @@ kind: Deployment
 metadata:
   name: tdd-backend
   namespace: tdd-backend
-
 spec:
   replicas: 1
-
   selector:
     matchLabels:
       app: tdd-backend
-
   template:
     metadata:
       labels:
         app: tdd-backend
-
     spec:
       serviceAccountName: tdd-backend
-
       containers:
         - name: backend
-          image: docker.io/uditdataxis12345/tdd-react-backend:20260901082133-3b4deef # {"$imagepolicy": "flux-system:tdd-react-backend"}
-
+          image: docker.io/uditdataxis12345/tdd-react-backend:20261126114741-34d6449 # {"$imagepolicy": "flux-system:tdd-react-backend"}
           ports:
             - containerPort: 3000
-
           env:
             - name: OTEL_LOGS_ENDPOINT
               valueFrom:
                 secretKeyRef:
                   name: tdd-backend-secrets
                   key: OTEL_LOGS_ENDPOINT
-
             - name: OTEL_METRICS_ENDPOINT
               valueFrom:
                 secretKeyRef:
                   name: tdd-backend-secrets
                   key: OTEL_METRICS_ENDPOINT
-
           resources:
             requests:
               cpu: 100m
@@ -46,12 +37,10 @@ spec:
             limits:
               cpu: 500m
               memory: 256Mi
-
           volumeMounts:
             - name: openbao-secrets
               mountPath: /mnt/secrets-store
               readOnly: true
-
       volumes:
         - name: openbao-secrets
           csi:
